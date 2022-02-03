@@ -1,0 +1,40 @@
+---
+site_name: Iskoras
+site_code: ISK
+version: 2.0.0
+doc_url: https://www.mn.uio.no/geo/english/research/groups/latice/
+meta_url: https://www.mn.uio.no/geo/english/research/groups/latice/
+coordinates:
+  lat: 69.3408715
+  lon: 25.29547425
+# The final tar-ball will end up here (make sure the path is correct):
+output_dir: C:/Git_repos/nlp-input-handling/output/ISKs
+nc_input_paths:
+  # Use a root path that ALL (!) other given paths will be relative to?
+  use_root: True
+  root_path: /cluster/shared/noresm/inputdata/
+  # Land component
+  land:
+    urban: lnd/clm2/urbandata/CLM50_tbuildmax_Oleson_2016_0.9x1.25_simyr1849-2106_c160923.nc
+    parameter_files:
+      clm: lnd/clm2/clm5_params.c200402.nc
+      fates: lnd/clm2/fates_params_api.14.0.0_12pft_c200921.nc
+    fire: lnd/clm2/firedata/clmforc.Li_2017_HYDEv3.2_CMIP6_hdm_0.5x0.5_AVHRR_simyr1850-2016_c180202.nc
+    aerosol:
+      snicar_drt: lnd/clm2/snicardata/snicar_drdt_bst_fit_60_c070416.nc
+      snicar_optics: lnd/clm2/snicardata/snicar_optics_5bnd_c090915.nc
+    surface:
+      # Use a prepared global data set (specified in next line)?
+      use_global: False
+      global: lnd/clm2/surfdata_map/release-clm5.0.18/surfdata_0.9x1.25_hist_16pfts_Irrig_CMIP6_simyr2000_c190214.nc
+      # Otherwise create from following
+      one:
+  # Atmospheric component
+  atmosphere:
+    GSWP3: here
+    topology: here
+    NASA_LIS: here
+    top_mozart_aero: here
+  # Shared by different components
+  share:
+    domain: here
