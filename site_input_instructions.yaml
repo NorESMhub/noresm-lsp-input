@@ -1,42 +1,40 @@
 ---
-site_name: Iskoras
-site_code: ISK
-version: 2.0.0
+site_name: Iskoras # Long name, added to meta data
+site_code: ISK # Site code, determines naming of the output dirs/files
+version: 2.0.0 # OBS! Sites with the same version must use the same .nc files
 coordinates:
   lat: 69.3408715
   lon: 25.29547425
 meta_info:
   doc_url: https://www.mn.uio.no/geo/english/research/groups/latice/
   meta_url: https://www.mn.uio.no/geo/english/research/groups/latice/
-# This legacy script requires CTSM (https://github.com/NordicESMhub/ctsm)!
-CTSM_path: /cluster/home/lassetk/CTSM/
+# This implementation requires a custom CTSM version (run install_ctsm.sh first)
+ctsm_path: ~/ctsm/
 # The final tar-ball will end up here:
 output_dir: /cluster/shared/noresm/inputdata/fates_platform
 nc_input_paths:
   # Use a root path that ALL (!) other given paths will be relative to
   root_path: /cluster/shared/noresm/inputdata/
+  # Shared by different components
+  share:
+    SCRIP: yes # yes or no
+    domain: yes # yes or no
+    mapping: yes # yes or no
   # Land component
   land:
+    surface: lnd/clm2/surfdata_map/release-clm5.0.18/surfdata_0.9x1.25_hist_16pfts_Irrig_CMIP6_simyr2000_c190214.nc
     urban: lnd/clm2/urbandata/CLM50_tbuildmax_Oleson_2016_0.9x1.25_simyr1849-2106_c160923.nc
+    aerosol:
+      dominant_river_tracing: lnd/clm2/snicardata/snicar_drdt_bst_fit_60_c070416.nc
+      optical_properties: lnd/clm2/snicardata/snicar_optics_5bnd_c090915.nc
+    fire: lnd/clm2/firedata/clmforc.Li_2017_HYDEv3.2_CMIP6_hdm_0.5x0.5_AVHRR_simyr1850-2016_c180202.nc
     parameter_files:
       clm: lnd/clm2/clm5_params.c200402.nc
       fates: lnd/clm2/fates_params_api.14.0.0_12pft_c200921.nc
-    fire: lnd/clm2/firedata/clmforc.Li_2017_HYDEv3.2_CMIP6_hdm_0.5x0.5_AVHRR_simyr1850-2016_c180202.nc
-    aerosol:
-      snicar_drt: lnd/clm2/snicardata/snicar_drdt_bst_fit_60_c070416.nc
-      snicar_optics: lnd/clm2/snicardata/snicar_optics_5bnd_c090915.nc
-    surface:
-      # Use a prepared global data set (specified in next line)?
-      use_global: no
-      global: lnd/clm2/surfdata_map/release-clm5.0.18/surfdata_0.9x1.25_hist_16pfts_Irrig_CMIP6_simyr2000_c190214.nc
-      # Otherwise create from following
   # Atmospheric component
   atmosphere:
-    GSWP3: here
-    topology: here
-    NASA_LIS: here
-    top_mozart_aero: here
-  # Shared by different components
-  share:
-    domain: no # yes or no
-    script: yes # yes or no
+    climate:
+      GSWP3: atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v1.c170516
+    topography: atm/datm7/topo_forcing/topodata_0.9x1.25_USGS_070110_stream_c151201.nc
+    lightning: atm/datm7/NASA_LIS/clmforc.Li_2016_climo1995-2013.360x720.lnfm_Total_c160825.nc
+    aerosol_deposition: atm/cam/chem/trop_mozart_aero/aero/aerosoldep_WACCM.ensmean_monthly_hist_1849-2015_0.9x1.25_CMIP6_c180926.nc

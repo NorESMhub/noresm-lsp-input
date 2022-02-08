@@ -175,8 +175,9 @@ Classes
 ################################################################################
 class SinglePointExtractor:
 
-    minimum_required = ('urban', 'clm', 'fates', 'snicar_drt', 'snicar_optics',
-    'fire', 'GSWP3', 'topology', 'NASA_LIS', 'top_mozart_aero')
+    minimum_required = ('surface', 'urban', 'dominant_river_tracing',
+    'optical_properties', 'fire', 'clm', 'fates', 'GSWP3', 'topography',
+    'lightning', 'aerosol_deposition')
 
     def __init__(self, instruction_dict: dict):
         self.instruction_dict = instruction_dict
