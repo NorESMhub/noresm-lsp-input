@@ -68,6 +68,6 @@ fi
 python3 -m venv $DIR_ENV
 source $DIR_ENV/bin/activate
 python3 -m pip install --upgrade pip
-python3 -m pip install -r $DIR_CODE/requirements_3.7.txt
+python3 -m pip install -r $DIR_CODE/requirements.txt
 deactivate
 module purge
