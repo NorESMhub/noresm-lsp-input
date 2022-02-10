@@ -182,7 +182,7 @@ Classes
 class Machine:
 
     ### Path to the machine definition yaml file, keep in same folder!
-    definition_yaml_file = Path(__file__) / machine_properties.yaml
+    definition_yaml_file = Path(__file__).parent / 'machine_properties.yaml'
 
     def __init__(self, name: str):
         self.name = name
@@ -298,15 +298,23 @@ class SinglePointExtractor:
         return True
 
     def _check_shared_input(self) -> bool:
-        if not self.instruction_dict['share']['SCRIP']['create_new']:
+        """Check the user input for shared components, raises ValueError"""
+        
+        dict_ = self.instruction_dict['nc_input_paths']['share']
+        for key, val in dict_.items():
+            if not val['create_new']:
+                if val['path'] is None:
+                    raise ValueError("You must provide a path if 'create_new' is 'no'!")
+
+        if not dict_['SCRIP']['create_new']:
             self.scrip_file_path = \
-            Path(self.instruction_dict['share']['SCRIP']['path']).expanduser()
-        if not self.instruction_dict['share']['domain']['create_new']:
+            Path(dict_['SCRIP']['path']).expanduser()
+        if not dict_['domain']['create_new']:
             self.domain_file_path = \
-            Path(self.instruction_dict['share']['domain']['path']).expanduser()
-        if not self.instruction_dict['share']['mapping']['create_new']:
+            Path(dict_['domain']['path']).expanduser()
+        if not dict_['mapping']['create_new']:
             self.mapping_file_path = \
-            Path(self.instruction_dict['share']['mapping']['path']).expanduser()
+            Path(dict_['mapping']['path']).expanduser()
 
         return True
 
@@ -618,7 +626,7 @@ class SinglePointExtractor:
         for file_path in created_file_paths_list:
             cur_path = tar_dir_path / file_path.parent / self.site_code
             self.make_dir(cur_path)
-            cmd += f"cp {self.output_dir}/{file_path} {cur_path}/;")
+            cmd += f"cp {self.output_dir}/{file_path} {cur_path}/;"
 
         self._run_process(cmd)
 
@@ -698,7 +706,8 @@ def main():
     ###################### START CREATING INPUT DATA ###########################
     for site_dict in recipe_dict_list:
 
-        extractor = SinglePointExtractor(site_dict)
+        extractor = SinglePointExtractor(instruction_dict=site_dict,
+        machine=machine)
 
         #extractor.create_share_forcing()
         #extractor.create_land_forcing()
