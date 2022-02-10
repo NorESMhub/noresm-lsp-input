@@ -340,21 +340,6 @@ class SinglePointExtractor:
     ############################################################################
 
     @staticmethod
-    def run_process(cmd, env=None):
-        """Run a command via subprocess.run()"""
-
-        print(f'\nEXECUTING\n{cmd}\n')
-        proc = subprocess.run(cmd, env=env, shell=True, check=True,
-        capture_output=True)
-        print(proc.stderr)
-        print(proc.stdout)
-        print('DONE!\n')
-
-        return str(proc.stdout)
-
-    ############################################################################
-
-    @staticmethod
     def get_run_ncl_string(ncl_file_path: str, **kwargs) -> str:
         """Generate a string for running ncl files with arbitrary nr. of arguments"""
 
@@ -863,6 +848,7 @@ def main():
 
         if not yaml_file_path.is_file():
             print(f"The yaml file '{args.yaml_file}' does not exist!")
+            sys.exit()
         recipe_dict_list.append(read_yaml_as_dict(yaml_file_path))
 
     # Neither -d nor -f provided?
