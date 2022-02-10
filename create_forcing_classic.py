@@ -237,7 +237,7 @@ class SinglePointExtractor:
         self.created_files_path_list = []
 
         # Repo dir
-        self.code_dir = Path(__file__).expanduser().parent
+        self.code_dir = Path(__file__).expanduser().absolute().parent
         self.ncl_script_dir = self.code_dir / 'external_scripts' / 'ncl'
 
         # LOCAL OUTPUT DIR
@@ -361,7 +361,7 @@ class SinglePointExtractor:
         cmd = "ncl "
         cmd += " ".join([f"""'{key}="{val}"'""" if isinstance(val, str)
         else f"{key}={val}" for key, val in kwargs.items()])
-        cmd += f" {ncl_file_path}"
+        cmd += f" {ncl_file_path};"
 
         return cmd
 
@@ -531,7 +531,7 @@ class SinglePointExtractor:
     def _create_land_aerosol(self):
         """TODO: Fix whatever this is"""
         pass
-        
+
     ############################################################################
 
     def _create_urban(self):
