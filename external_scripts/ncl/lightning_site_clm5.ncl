@@ -1,11 +1,11 @@
-; Create site/regional lightning data for the model platform 
+; Create site/regional lightning data for the model platform
 ; The origional global file used by default is too large.
 ; This script is adapated from the original "aerdepregrid.ncl" used in early versions of CLM (see below the original statement)
 ;
 ;;#####################################################
-;; Regrid CLM Aerosol-Deposition file (aerdep) to a new resolution. 
+;; Regrid CLM Aerosol-Deposition file (aerdep) to a new resolution.
 ;; Works for climatology monthly aerdep files.
-;; Uses input environment variables to determine resolution and other 
+;; Uses input environment variables to determine resolution and other
 ;; parameters to describe set of files to use.
 ;; Uses bld query to get input filenames. Also uses env variable CSMDATA for location
 ;; of input files.
@@ -27,12 +27,14 @@ begin
 ;Setup begin
 ;################
 
-   if (.not. isvar("plot_name")) then      ; is plot_name on command line?
+  if (.not. isvar("plot_name")) then      ; is plot_name on command line?
     print("You must set the variable 'plot_name' via the command line! Example:")
     print("ncl 'plot_name=''SUB1''' file_name.ncl")
     print("OBS: the two single quotes around the command line string argument (-->''SUB1'') must be replaced by double quotes!")
     exit
   end if
+
+  print( "Start creating lightning forcing for: "+plot_name )
 
   if (.not. isvar("nc_in_file_path")) then      ; is nc_in_file_path on command line?
     print("You must provide a path to a aerdep nc file via the command line! Example:")
@@ -62,11 +64,6 @@ begin
     exit
   end if
 
-  ;do p=0,11,1
-
-   ; nc_in_file_path    = "/cluster/shared/noresm/inputdata/atm/datm7/NASA_LIS/clmforc.Li_2016_climo1995-2013.360x720.lnfm_Total_c160825.nc" ; global lightning data file
-   ; out_file_path = "/cluster/shared/noresm/inputdata_fates_platform/atm/datm7/NASA_LIS/clmforc.Li_2016_climo1995-2013.360x720.lnfm_Total_c160825_"+plot_name(p)+".nc" ;output lightning data file for the site 
-   ; domain_file_path    = "/cluster/shared/noresm/inputdata_fates_platform/share/domains/"+plot_name(p)+"/domain.lnd."+plot_name(p)+".200422.nc"  ;domain file for the site       
 ;################
 ;Setup end
 ;################
@@ -225,5 +222,5 @@ begin
 
   print( "================================================================================================" );
   print( "Successfully created output aerdep file: "+out_file_path );
-  ;end do
+
 end

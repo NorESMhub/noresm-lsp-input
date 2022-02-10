@@ -35,6 +35,8 @@ begin
     exit
   end if
 
+  print ( "Beginning to build aerdep file for: "+plot_name )
+
   if (.not. isvar("nc_in_file_path")) then      ; is nc_in_file_path on command line?
     print("You must provide a path to a aerdep nc file via the command line! Example:")
     print("ncl 'nc_in_file_path=''/cluster/shared/aero.nc''' file_name.ncl")

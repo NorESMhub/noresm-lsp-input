@@ -1,17 +1,15 @@
 ;
-; Create site elevation file to be read by DATM 
+; Create site elevation file to be read by DATM
 ;
 ;  Hui Tang
 ;  08/2020
-;  
+;
 
 begin
- 
+
 ;################
 ;Setup begin
 ;################
-   ;plot_name=(/"VIKE","JOAS","LIAH"/)          ; site name
-   ;plot_height=(/469,920,1290/)                ; site elevation (m)
 
   if (.not. isvar("plot_name")) then      ; is plot_name on command line?
     print("You must set the variable 'plot_name' via the command line! Example:")
@@ -19,6 +17,8 @@ begin
     print("OBS: the two single quotes around the command line string argument (-->''SUB1'') must be replaced by double quotes!")
     exit
   end if
+
+  print( "Creating topography for: "+plot_name )
 
   if (.not. isvar("plot_height")) then      ; is plot_name on command line?
     print("You must set the variable 'plot_height' (-> site elevation) via the command line! Example:")
@@ -53,12 +53,6 @@ begin
     print("OBS: the two single quotes around the command line string argument (-->''/cluster/...'') must be replaced by double quotes!")
     exit
   end if
- 
-  ;do p=0,2,1
- 
-    ;nc_in_file_path    = "/cluster/shared/noresm/inputdata/atm/datm7/topo_forcing/topodata_0.9x1.25_USGS_070110_stream_c151201.nc"         ; global file for a template of the netcdf file
-    ;out_file_path = "/cluster/shared/noresm/inputdata_fates_platform/atm/datm7/topo_forcing/topodata_"+plot_name(p)+".nc"             ; output topography file for the site
-    ;domain_file_path    = "/cluster/shared/noresm/inputdata_fates_platform/share/domains/"+plot_name(p)+"/domain.lnd."+plot_name(p)+".200927.nc"    ; domain file for the site    
 
 ;################
 ;Setup end
@@ -143,7 +137,5 @@ begin
 
   print( "================================================================================================" );
   print( "Successfully created output aerdep file: "+out_file_path );
-  
-  ;end do
-  
+
 end

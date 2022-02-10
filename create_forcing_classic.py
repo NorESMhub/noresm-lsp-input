@@ -209,6 +209,7 @@ class Machine:
 ################################################################################
 
 class SinglePointExtractor:
+    """Documentation!"""
 
     minimum_required = ('surface', 'urban', 'dominant_river_tracing',
     'optical_properties', 'fire', 'clm', 'fates', 'GSWP3', 'topography',
@@ -219,19 +220,25 @@ class SinglePointExtractor:
     mapping_file_path = None
 
     def __init__(self, instruction_dict: dict, machine: Machine):
+
         self.instruction_dict = instruction_dict
         self.machine = machine
 
         self.version = self.instruction_dict['version']
-        self.site_code = self.instruction_dict['site_code']
-        self.elevation = self.instruction_dict['elevation']
         self.date = date.today().strftime("%Y-%m-%d")
 
+        self.site_name = self.instruction_dict['site_name']
+        self.site_code = self.instruction_dict['site_code']
+        self.lat = self.instruction_dict['coordinates']['lat']
+        self.lon = self.instruction_dict['coordinates']['lon']
+        self.elevation = self.instruction_dict['elevation']
+
         # Instantiate empty list to store created file paths
-        self.created_file_paths_list = []
+        self.created_files_path_list = []
 
         # Repo dir
-        self.code_dir = Path(__file__).expanduser()
+        self.code_dir = Path(__file__).expanduser().parent
+        self.ncl_script_dir = self.code_dir / 'external_scripts' / 'ncl'
 
         # LOCAL OUTPUT DIR
         self.output_dir = \
@@ -247,15 +254,12 @@ class SinglePointExtractor:
         if not self.tar_output_dir.is_dir():
             self.make_dir(self.tar_output_dir)
 
+        # CTSM dir for mapping files
         self.ctsm_path = Path(self.instruction_dict['ctsm_path']).expanduser()
         self.root_path = \
         Path(self.instruction_dict['nc_input_paths']['root_path']).expanduser()
 
-        self.site_name = self.instruction_dict['site_name']
-        self.site_code = self.instruction_dict['site_code']
-        self.lat = self.instruction_dict['coordinates']['lat']
-        self.lon = self.instruction_dict['coordinates']['lon']
-
+        # Run some input checks
         if not self.ceck_minimum_required(instruction_dict):
             sys.exit()
         self._check_shared_input()
@@ -299,7 +303,7 @@ class SinglePointExtractor:
 
     def _check_shared_input(self) -> bool:
         """Check the user input for shared components, raises ValueError"""
-        
+
         dict_ = self.instruction_dict['nc_input_paths']['share']
         for key, val in dict_.items():
             if not val['create_new']:
@@ -320,12 +324,14 @@ class SinglePointExtractor:
 
     ############################################################################
 
-    def _run_process(cmd, env=None):
+    @staticmethod
+    def run_process(cmd, env=None):
         """Run a command via subprocess.run()"""
 
         print(f'\nEXECUTING\n{cmd}\n')
         proc = subprocess.run(cmd, env=env, shell=True, check=True,
         capture_output=True)
+        print(proc.stderr)
         print(proc.stdout)
         print('DONE!\n')
 
@@ -333,8 +339,36 @@ class SinglePointExtractor:
 
     ############################################################################
 
+    @staticmethod
+    def run_process(cmd, env=None):
+        """Run a command via subprocess.run()"""
+
+        print(f'\nEXECUTING\n{cmd}\n')
+        proc = subprocess.run(cmd, env=env, shell=True, check=True,
+        capture_output=True)
+        print(proc.stderr)
+        print(proc.stdout)
+        print('DONE!\n')
+
+        return str(proc.stdout)
+
+    ############################################################################
+
+    @staticmethod
+    def get_run_ncl_string(ncl_file_path: str, **kwargs) -> str:
+        """Generate a string for running ncl files with arbitrary nr. of arguments"""
+
+        cmd = "ncl "
+        cmd += " ".join([f"""'{key}="{val}"'""" if isinstance(val, str)
+        else f"{key}={val}" for key, val in kwargs.items()])
+        cmd += f" {ncl_file_path}"
+
+        return cmd
+
+    ############################################################################
+
     def _add_file_path_to_list(self, path: Union[Path, str]):
-        self.created_file_paths_list.append(path)
+        self.created_files_path_list.append(path)
 
     ############################################################################
     ############################################################################
@@ -372,7 +406,7 @@ class SinglePointExtractor:
         """Run functions to create atmospheric forcing files"""
 
         if self.instruction_dict['nc_input_paths']['atmosphere']['aerosol_deposition']:
-            self._create_aerosol()
+            self._create_atm_aerosol()
 
     ############################################################################
     ############################################################################
@@ -399,7 +433,7 @@ class SinglePointExtractor:
         + f"{output_path}"
 
         # RUN
-        self._run_process(cmd)
+        self.run_process(cmd)
 
         return True
 
@@ -427,7 +461,7 @@ class SinglePointExtractor:
         + f"_aave_da_{self.date}.nc -o ${self.site_code} -l ${self.site_code}"
 
         # RUN
-        self._run_process(cmd)
+        self.run_process(cmd)
 
         ### Move new files to created script directory
         cmd = f"mv {domain_scripts_path_str}/domain.lnd.{self.site_code}_{self.site_code}.{self.date}.nc " \
@@ -435,7 +469,7 @@ class SinglePointExtractor:
         + f"mv {domain_scripts_path_str}/domain*{self.site_code}*.nc " \
         + f"{output_path};"
         # RUN
-        self._run_process(cmd)
+        self.run_process(cmd)
 
         return True
 
@@ -459,7 +493,7 @@ class SinglePointExtractor:
         + f"{output_path};"
 
         # RUN
-        self._run_process(cmd)
+        self.run_process(cmd)
 
         return True
 
@@ -484,7 +518,7 @@ class SinglePointExtractor:
         + f'''mv surfdata*{self.site_code}* {output_path}'''
 
         # RUN
-        self._run_process(cmd)
+        self.run_process(cmd)
 
         return True
 
@@ -494,7 +528,7 @@ class SinglePointExtractor:
     ############################################################################
     ############################################################################
 
-    def _create_aerosol_deposition(self):
+    def _create_atm_aerosol_deposition(self):
         """TODO: Fix whatever this is"""
         #### You need to modify the settings in "aerdep_site_clm5.ncl" before doing the following command. See detailed instructions in the file.
 
@@ -515,7 +549,7 @@ class SinglePointExtractor:
 
         # Set up bash cmd
         cmd = self.machine.get_purge_str()
-        cmd += self.machine.generate_load_module_str(self, 'ncl')
+        cmd += self.machine.generate_load_module_str('ncl')
         cmd += f"""ncl 'plot_name="{self.site_code}"' """ \
         + f"""'aerdep_nc_file_path="{root_str}/{nc_str}"' """ \
         + f"""'out_file_path="{out_str}"' """ \
@@ -524,7 +558,7 @@ class SinglePointExtractor:
         cmd += self.machine.get_purge_str()
 
         # RUN
-        self._run_process(cmd)
+        self.run_process(cmd)
         # Add to list, manually edited to match ncl script behavior
         nc_str_no_suffix = nc_str.replace('.nc', '')
         self._add_file_path_to_list(
@@ -535,40 +569,118 @@ class SinglePointExtractor:
 
     ############################################################################
 
-    def _create_topography(self):
-        """Fix whatever this is:"""
-        #### You need to modify the settings in "urbandata_site_clm5.ncl"
-        #### before doing the following command. See detailed instructions in the file.
-
-        # Create folder
-        output_path = self.output_dir / \
-        'lnd' / 'clm2' / 'mappingdata' / 'maps' / self.site_code
-        self.make_dir(output_path)
+    def _create_urban(self):
+        """Create site .nc file for urban data"""
 
         ### Call scripts to make mapping files
-        aero_scripts_path_string = \
-        str(self.ctsm_path / '/tools/emerald_sites_tools')
+        ncl_script_dir = self.ncl_script_dir
+        script_name = "urbandata_site_clm5.ncl"
 
-        cmd = f"{aero_scripts_path_string}/ncl aerdep_site_clm5.ncl"
-        subprocess.run(cmd, shell=True, check=True)
+        # Paths from dict
+        root_str = str(self.root_path)
+        nc_in_str = \
+        self.instruction_dict['nc_input_paths']['land']['urban']
 
+        out_path = self.output_dir/'lnd'/'clm2'/'urbandata'
+        if not out_path.is_dir():
+            self.make_dir(out_path)
+        out_str = str(out_path)
+
+        # Set up bash cmd
+        cmd = self.machine.get_purge_str()
+        cmd += self.machine.generate_load_module_str('ncl')
+
+        cmd += self.get_run_ncl_string(
+        ncl_file_path=f"{ncl_script_dir}/{script_name}",
+        plot_name=str(self.site_code),
+        nc_in_file_path=f"{root_str}/{nc_in_str}"
+        out_file_path=f"{out_str}",
+        domain_file_path=str(self.domain_file_path)
+        )
+        cmd += self.machine.get_purge_str()
+
+        # RUN
+        self.run_process(cmd)
+
+        # Add to list, manually edited to match ncl script behavior
+        nc_str_no_suffix = nc_in_str.replace('.nc', '')
+        self._add_file_path_to_list(
+        PurePosixPath(out_str+nc_str_no_suffix+"_"+self.site_code+".nc")
+        )
 
         return True
 
     ############################################################################
 
-    def _create_urban(self, file_path: Union[str, Path]):
-        pass
+    def add_parameter_files(self):
+
+        # Paths from dict
+        root_str = str(self.root_path)
+
+        out_path = self.output_dir/'lnd'/'clm2'/'paramdata'
+        if not out_path.is_dir():
+            self.make_dir(out_path)
+        out_str = str(out_path)
+
+        param_dict = \
+        self.instruction_dict['nc_input_paths']['land']['parameter_files']
+
+        for nc_in_str in param_dict.values():
+            if nc_in_str is not None:
+                cmd = f"cp {root_str}/{nc_in_str} {out_str};"
+                # RUN
+                self.run_process(cmd)
+
+                # Add to list
+                nc_file_name = Path(nc_in_str).name
+                self._add_file_path_to_list(
+                    PurePosixPath(out_path / nc_file_name)
+                )
+
+        return True
 
     ############################################################################
 
-    def _create_clm_param(self, file_path: Union[str, Path]):
-        pass
+    def _create_fire(self):
+        """Create site/regional fire .nc file, i.e., regridding population density"""
 
-    ############################################################################
+        ### Call scripts to make mapping files
+        ncl_script_dir = self.ncl_script_dir
+        script_name = "popden_site_clm5.ncl"
 
-    def _create_fates_param(self, file_path: Union[str, Path]):
-        pass
+        # Paths from dict
+        root_str = str(self.root_path)
+        nc_in_str = \
+        self.instruction_dict['nc_input_paths']['land']['fire']
+
+        out_path = self.output_dir/'lnd'/'clm2'/'firedata'
+        if not out_path.is_dir():
+            self.make_dir(out_path)
+        out_str = str(out_path)
+
+        # Set up bash cmd
+        cmd = self.machine.get_purge_str()
+        cmd += self.machine.generate_load_module_str('ncl')
+
+        cmd += self.get_run_ncl_string(
+        ncl_file_path=f"{ncl_script_dir}/{script_name}",
+        plot_name=str(self.site_code),
+        nc_in_file_path=f"{root_str}/{nc_in_str}"
+        out_file_path=f"{out_str}",
+        domain_file_path=str(self.domain_file_path)
+        )
+        cmd += self.machine.get_purge_str()
+
+        # RUN
+        self.run_process(cmd)
+
+        # Add to list, manually edited to match ncl script behavior
+        nc_str_no_suffix = nc_in_str.replace('.nc', '')
+        self._add_file_path_to_list(
+        PurePosixPath(out_str+nc_str_no_suffix+"_"+self.site_code+".nc")
+        )
+
+        return True
 
     ############################################################################
     ############################################################################
@@ -576,31 +688,123 @@ class SinglePointExtractor:
     ############################################################################
     ############################################################################
 
-    def _create_aerosol(self):
+    def _create_atm_aerosol(self):
         """Create input .nc file for atmospheric aerosol deposition"""
 
         ### Call scripts to make mapping files
-        aero_scripts_path_string = str(self.code_dir/'external_scripts'/'ncl')
+        ncl_script_dir = self.ncl_script_dir
         script_name = "aerdep_site_clm5.ncl"
 
         # Paths from dict
         root_str = str(self.root_path)
         nc_in_str = self.instruction_dict['nc_input_paths']['atmosphere']['aerosol_deposition']
-        out_str = str(self.output_dir/'atm'/'cam'/'chem'/'trop_mozart_aero'/'aero')
+        out_path = self.output_dir/'atm'/'cam'/'chem'/'trop_mozart_aero'/'aero'
+        if not out_path.is_dir():
+            self.make_dir(out_path)
+        out_str = str(out_path)
 
         # Set up bash cmd
         cmd = self.machine.get_purge_str()
-        cmd += self.machine.generate_load_module_str(self, 'ncl')
+        cmd += self.machine.generate_load_module_str('ncl')
 
-        cmd += f"""ncl 'plot_name="{self.site_code}"' """ \
-        + f"""'nc_in_file_path="{root_str}/{nc_in_str}"' """ \
-        + f"""'out_file_path="{out_str}"' """ \
-        + f"""'domain_file_path="{self.domain_file_path}"' """ \
-        + f"""{aero_scripts_path_string}/{script_name};"""
+        cmd += self.get_run_ncl_string(
+        ncl_file_path=f"{ncl_script_dir}/{script_name}",
+        plot_name=str(self.site_code),
+        nc_in_file_path=f"{root_str}/{nc_in_str}"
+        out_file_path=f"{out_str}",
+        domain_file_path=str(self.domain_file_path)
+        )
         cmd += self.machine.get_purge_str()
 
         # RUN
-        self._run_process(cmd)
+        self.run_process(cmd)
+
+        # Add to list, manually edited to match ncl script behavior
+        nc_str_no_suffix = nc_in_str.replace('.nc', '')
+        self._add_file_path_to_list(
+        PurePosixPath(out_str+nc_str_no_suffix+"_"+self.site_code+".nc")
+        )
+
+        return True
+
+    ############################################################################
+
+    def _create_atm_lightning(self):
+        """Create input .nc file for lightning"""
+
+        ### Call scripts to make mapping files
+        ncl_script_dir = self.ncl_script_dir
+        script_name = "lightning_site_clm5.ncl"
+
+        # Paths from dict
+        root_str = str(self.root_path)
+        nc_in_str = \
+        self.instruction_dict['nc_input_paths']['atmosphere']['lightning']
+
+        out_path = self.output_dir/'atm'/'datm7'/'NASA_LIS'
+        if not out_path.is_dir():
+            self.make_dir(out_path)
+        out_str = str(out_path)
+
+        # Set up bash cmd
+        cmd = self.machine.get_purge_str()
+        cmd += self.machine.generate_load_module_str('ncl')
+
+        cmd += self.get_run_ncl_string(
+        ncl_file_path=f"{ncl_script_dir}/{script_name}",
+        plot_name=str(self.site_code),
+        nc_in_file_path=f"{root_str}/{nc_in_str}"
+        out_file_path=f"{out_str}",
+        domain_file_path=str(self.domain_file_path)
+        )
+        cmd += self.machine.get_purge_str()
+
+        # RUN
+        self.run_process(cmd)
+
+        # Add to list, manually edited to match ncl script behavior
+        nc_str_no_suffix = nc_in_str.replace('.nc', '')
+        self._add_file_path_to_list(
+        PurePosixPath(out_str+nc_str_no_suffix+"_"+self.site_code+".nc")
+        )
+
+        return True
+
+    ############################################################################
+
+    def _create_topography(self):
+        """Create site elevation file to be read by DATM"""
+
+        ### Call scripts to make mapping files
+        ncl_script_dir = self.ncl_script_dir
+        script_name = "topo_site_clm5.ncl"
+
+        # Paths from dict
+        root_str = str(self.root_path)
+        nc_in_str = \
+        self.instruction_dict['nc_input_paths']['atmosphere']['topography']
+
+        out_path = self.output_dir/'atm'/'datm7'/'topo_forcing'
+        if not out_path.is_dir():
+            self.make_dir(out_path)
+        out_str = str(out_path)
+
+        # Set up bash cmd
+        cmd = self.machine.get_purge_str()
+        cmd += self.machine.generate_load_module_str('ncl')
+
+        cmd += self.get_run_ncl_string(
+            ncl_file_path=f"{ncl_script_dir}/{script_name}",
+            plot_name=str(self.site_code),
+            plot_height=self.elevation,
+            nc_in_file_path=f"{root_str}/{nc_in_str}"
+            out_file_path=f"{out_str}",
+            domain_file_path=str(self.domain_file_path)
+        )
+        cmd += self.machine.get_purge_str()
+
+        # RUN
+        self.run_process(cmd)
 
         # Add to list, manually edited to match ncl script behavior
         nc_str_no_suffix = nc_in_str.replace('.nc', '')
@@ -616,25 +820,24 @@ class SinglePointExtractor:
     def tar_output(self):
         """Compress the files in the specified output dir into a Tarball"""
 
-        self._run_process(f"cd {self.tar_output_dir};")
         tar_dir_path = self.tar_output_dir / 'inputdata'
         self.make_dir(tar_dir_path)
 
         print("Starting to compress the files...")
 
         cmd = ""
-        for file_path in created_file_paths_list:
+        for file_path in created_files_path_list:
             cur_path = tar_dir_path / file_path.parent / self.site_code
             self.make_dir(cur_path)
             cmd += f"cp {self.output_dir}/{file_path} {cur_path}/;"
 
-        self._run_process(cmd)
+        self.run_process(cmd)
 
         ### Tar folder
         tar_dir_name = f"inputdata_version{self.version}_{self.site_code}.tar"
         cmd = f"tar -cvf {tar_dir_name} inputdata;"
-        cmd += f"rm -r inputdata;"
-        self._run_process(cmd)
+        cmd += f"rm -r {tar_dir_path};"
+        self.run_process(cmd)
 
         return True
 
@@ -716,7 +919,27 @@ def main():
         ### FOR TESTING, EXECUTE EACH FUNCTION INDIVIDUALLY
         user_in = input("Create aero dep? [y/n]: ")
         if user_in.lower() == "y":
-            extractor._create_aerosol()
+            extractor._create_atm_aerosol()
+
+        user_in = input("Create lightning? [y/n]: ")
+        if user_in.lower() == "y":
+            extractor._create_atm_aerosol()
+
+        user_in = input("Create pop den? [y/n]: ")
+        if user_in.lower() == "y":
+            extractor._create_atm_aerosol()
+
+        user_in = input("Create topo? [y/n]: ")
+        if user_in.lower() == "y":
+            extractor._create_atm_aerosol()
+
+        user_in = input("Create urban? [y/n]: ")
+        if user_in.lower() == "y":
+            extractor._create_atm_aerosol()
+
+        user_in = input("Create params? [y/n]: ")
+        if user_in.lower() == "y":
+            extractor._create_atm_aerosol()
 
         #extractor.tar_output()
 

@@ -2,3 +2,6 @@
 *.log
 # Output
 output/*
+
+# Virtual environment
+env/*
