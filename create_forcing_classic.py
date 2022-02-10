@@ -528,45 +528,10 @@ class SinglePointExtractor:
     ############################################################################
     ############################################################################
 
-    def _create_atm_aerosol_deposition(self):
+    def _create_land_aerosol(self):
         """TODO: Fix whatever this is"""
-        #### You need to modify the settings in "aerdep_site_clm5.ncl" before doing the following command. See detailed instructions in the file.
-
-        # Create folder
-        output_path = self.output_dir / \
-        'lnd' / 'clm2' / 'mappingdata' / 'maps' / self.site_code
-        self.make_dir(output_path)
-
-        ### Call scripts to make mapping files
-        aero_scripts_path_string = \
-        str(self.ctsm_path / '/tools/emerald_sites_tools')
-        script_name = "aerdep_site_clm5.ncl"
-
-        # Paths from dict
-        root_str = str(self.root_path)
-        nc_str = str(self.instruction_dict['nc_input_paths']['atmosphere']['aerosol_deposition'])
-        out_str = self.instruction_dict['output_dir']
-
-        # Set up bash cmd
-        cmd = self.machine.get_purge_str()
-        cmd += self.machine.generate_load_module_str('ncl')
-        cmd += f"""ncl 'plot_name="{self.site_code}"' """ \
-        + f"""'aerdep_nc_file_path="{root_str}/{nc_str}"' """ \
-        + f"""'out_file_path="{out_str}"' """ \
-        + f"""'domain_file_path="{self.domain_file_path}"' """ \
-        + f"""{aero_scripts_path_string}/{script_name};"""
-        cmd += self.machine.get_purge_str()
-
-        # RUN
-        self.run_process(cmd)
-        # Add to list, manually edited to match ncl script behavior
-        nc_str_no_suffix = nc_str.replace('.nc', '')
-        self._add_file_path_to_list(
-        PurePosixPath(out_str+nc_str_no_suffix+"_"+self.site_code+".nc")
-        )
-
-        return True
-
+        pass
+        
     ############################################################################
 
     def _create_urban(self):
@@ -593,7 +558,7 @@ class SinglePointExtractor:
         cmd += self.get_run_ncl_string(
         ncl_file_path=f"{ncl_script_dir}/{script_name}",
         plot_name=str(self.site_code),
-        nc_in_file_path=f"{root_str}/{nc_in_str}"
+        nc_in_file_path=f"{root_str}/{nc_in_str}",
         out_file_path=f"{out_str}",
         domain_file_path=str(self.domain_file_path)
         )
@@ -665,7 +630,7 @@ class SinglePointExtractor:
         cmd += self.get_run_ncl_string(
         ncl_file_path=f"{ncl_script_dir}/{script_name}",
         plot_name=str(self.site_code),
-        nc_in_file_path=f"{root_str}/{nc_in_str}"
+        nc_in_file_path=f"{root_str}/{nc_in_str}",
         out_file_path=f"{out_str}",
         domain_file_path=str(self.domain_file_path)
         )
@@ -710,7 +675,7 @@ class SinglePointExtractor:
         cmd += self.get_run_ncl_string(
         ncl_file_path=f"{ncl_script_dir}/{script_name}",
         plot_name=str(self.site_code),
-        nc_in_file_path=f"{root_str}/{nc_in_str}"
+        nc_in_file_path=f"{root_str}/{nc_in_str}",
         out_file_path=f"{out_str}",
         domain_file_path=str(self.domain_file_path)
         )
@@ -753,7 +718,7 @@ class SinglePointExtractor:
         cmd += self.get_run_ncl_string(
         ncl_file_path=f"{ncl_script_dir}/{script_name}",
         plot_name=str(self.site_code),
-        nc_in_file_path=f"{root_str}/{nc_in_str}"
+        nc_in_file_path=f"{root_str}/{nc_in_str}",
         out_file_path=f"{out_str}",
         domain_file_path=str(self.domain_file_path)
         )
@@ -797,7 +762,7 @@ class SinglePointExtractor:
             ncl_file_path=f"{ncl_script_dir}/{script_name}",
             plot_name=str(self.site_code),
             plot_height=self.elevation,
-            nc_in_file_path=f"{root_str}/{nc_in_str}"
+            nc_in_file_path=f"{root_str}/{nc_in_str}",
             out_file_path=f"{out_str}",
             domain_file_path=str(self.domain_file_path)
         )
