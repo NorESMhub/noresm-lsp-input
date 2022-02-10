@@ -1,0 +1,7 @@
+---
+machines:
+  saga:
+    module_names:
+      Python: Python/3.9.6-GCCcore-11.2.0
+      ncl: NCL/6.6.2-intel-2019b
+      netCDF_Fortran: netCDF-Fortran/4.5.2-iimpi-2019b

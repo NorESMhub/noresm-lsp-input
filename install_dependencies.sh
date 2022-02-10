@@ -22,6 +22,7 @@ if ! [ -d $DIR_CTSM ]; then
     git checkout tags/$CTSM_RELEASE_TAG -b nlp-input-temp
     python3 ./manage_externals/checkout_externals
     module purge
+    echo "Done setting up CTSM!"
 else
     echo "WARNING! A clone of CTSM already exists in $HOME/ctsm."
     echo "If you run into errors, try to (re-)move it and re-run the"
@@ -33,6 +34,7 @@ if ! [ -d $HOME/.cime ]; then
     module load git/2.23.0-GCCcore-8.3.0
     git clone $DOT_CIME_REMOTE $HOME/.cime
     module purge
+    echo "Done cloning .cime folder!"
 else
     echo "WARNING! The hidden .cime/ folder already exists in $HOME."
     echo "If you run into errors, try to (re-)move it and re-run the"

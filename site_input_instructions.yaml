@@ -1,25 +1,34 @@
 ---
 site_name: Iskoras # Long name, added to meta data
-site_code: ISK # Site code, determines naming of the output dirs/files
-version: 2.0.0 # OBS! Sites with the same version must use the same .nc files
-coordinates:
+site_code: ALP4 # Site code, determines naming of the output dirs/files
+version: 2.1.0 # OBS! Sites with the same version must use the same .nc files
+coordinates: # Geographic coordinates, decimal (WGS84)
   lat: 69.3408715
   lon: 25.29547425
+elevation: 360 # m above sea level [m.a.s.l.]
 meta_info:
   doc_url: https://www.mn.uio.no/geo/english/research/groups/latice/
   meta_url: https://www.mn.uio.no/geo/english/research/groups/latice/
-# This implementation requires a custom CTSM version (run install_ctsm.sh first)
+# The scripts requires a custom CTSM version (run install_dependencies.sh first)
 ctsm_path: ~/ctsm/
 # The final tar-ball will end up here:
-output_dir: /cluster/shared/noresm/inputdata/fates_platform
+output:
+  local_output: ~/inputdata_fates_platform/testing/
+  tar_output_dir: /cluster/shared/noresm/inputdata_fates_platform/
 nc_input_paths:
   # Use a root path that ALL (!) other given paths will be relative to
   root_path: /cluster/shared/noresm/inputdata/
   # Shared by different components
   share:
-    SCRIP: yes # yes or no
-    domain: yes # yes or no
-    mapping: yes # yes or no
+    SCRIP:
+      create_new: no  # yes or no
+      path: /cluster/shared/noresm/inputdata_fates_platform/share/scripgrids/
+    domain:
+      create_new: no  # yes or no
+      path: /cluster/shared/noresm/inputdata_fates_platform/share/domains/ALP4/domain.lnd.ALP4.200422.nc
+    mapping:
+      create_new: no  # yes or no
+      path: # Only used if create_new is 'no'
   # Land component
   land:
     surface: lnd/clm2/surfdata_map/release-clm5.0.18/surfdata_0.9x1.25_hist_16pfts_Irrig_CMIP6_simyr2000_c190214.nc
