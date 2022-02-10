@@ -559,7 +559,7 @@ class SinglePointExtractor:
         ncl_file_path=f"{ncl_script_dir}/{script_name}",
         plot_name=str(self.site_code),
         nc_in_file_path=f"{root_str}/{nc_in_str}",
-        out_file_path=f"{out_str}",
+        out_file_path=f"{out_str}/", # IMPORTANT TO ADD TRAILING SLASH!
         domain_file_path=str(self.domain_file_path)
         )
         cmd += self.machine.get_purge_str()
@@ -631,7 +631,7 @@ class SinglePointExtractor:
         ncl_file_path=f"{ncl_script_dir}/{script_name}",
         plot_name=str(self.site_code),
         nc_in_file_path=f"{root_str}/{nc_in_str}",
-        out_file_path=f"{out_str}/",
+        out_file_path=f"{out_str}/", # IMPORTANT TO ADD TRAILING SLASH!
         domain_file_path=str(self.domain_file_path)
         )
         cmd += self.machine.get_purge_str()
@@ -676,7 +676,7 @@ class SinglePointExtractor:
         ncl_file_path=f"{ncl_script_dir}/{script_name}",
         plot_name=str(self.site_code),
         nc_in_file_path=f"{root_str}/{nc_in_str}",
-        out_file_path=f"{out_str}",
+        out_file_path=f"{out_str}/", # IMPORTANT TO ADD TRAILING SLASH!
         domain_file_path=str(self.domain_file_path)
         )
         cmd += self.machine.get_purge_str()
@@ -719,7 +719,7 @@ class SinglePointExtractor:
         ncl_file_path=f"{ncl_script_dir}/{script_name}",
         plot_name=str(self.site_code),
         nc_in_file_path=f"{root_str}/{nc_in_str}",
-        out_file_path=f"{out_str}",
+        out_file_path=f"{out_str}/", # IMPORTANT TO ADD TRAILING SLASH!
         domain_file_path=str(self.domain_file_path)
         )
         cmd += self.machine.get_purge_str()
@@ -763,7 +763,7 @@ class SinglePointExtractor:
             plot_name=str(self.site_code),
             plot_height=self.elevation,
             nc_in_file_path=f"{root_str}/{nc_in_str}",
-            out_file_path=f"{out_str}",
+            out_file_path=f"{out_str}/", # IMPORTANT TO ADD TRAILING SLASH!
             domain_file_path=str(self.domain_file_path)
         )
         cmd += self.machine.get_purge_str()
