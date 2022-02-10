@@ -612,7 +612,7 @@ class SinglePointExtractor:
 
     ############################################################################
 
-    def add_parameter_files(self):
+    def _add_parameter_files(self):
 
         # Paths from dict
         root_str = str(self.root_path)
@@ -923,23 +923,23 @@ def main():
 
         user_in = input("Create lightning? [y/n]: ")
         if user_in.lower() == "y":
-            extractor._create_atm_aerosol()
+            extractor._create_atm_lightning()
 
         user_in = input("Create pop den? [y/n]: ")
         if user_in.lower() == "y":
-            extractor._create_atm_aerosol()
+            extractor._create_fire()
 
         user_in = input("Create topo? [y/n]: ")
         if user_in.lower() == "y":
-            extractor._create_atm_aerosol()
+            extractor._create_topography()
 
         user_in = input("Create urban? [y/n]: ")
         if user_in.lower() == "y":
-            extractor._create_atm_aerosol()
+            extractor._create_urban()
 
         user_in = input("Create params? [y/n]: ")
         if user_in.lower() == "y":
-            extractor._create_atm_aerosol()
+            extractor._add_parameter_files()
 
         #extractor.tar_output()
 
