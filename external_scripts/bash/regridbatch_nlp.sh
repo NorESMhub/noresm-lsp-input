@@ -10,7 +10,7 @@
 
 # Note: this script is not portable!
 
-source /cluster/bin/jobsetup
+# source /cluster/bin/jobsetup -> APPARENTLY DEPRECATED
 module load ESMF/8.0.0-intel-2019b
 module load NCO/4.9.1-intel-2019b
 module load NCL/6.6.2-intel-2019b

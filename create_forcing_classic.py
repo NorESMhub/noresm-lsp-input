@@ -372,7 +372,7 @@ class SinglePointExtractor:
 
     ###########################################################################
 
-    def _add_file_path_to_list(self, path: Union[Path, str]):
+    def _add_file_path_to_list(self, path: Path):
         self.created_files_path_list.append(path)
 
     ###########################################################################
@@ -507,6 +507,10 @@ class SinglePointExtractor:
         # RUN
         self.run_process(cmd)
 
+        # Set variable
+        self.domain_file_path = output_path / \
+            f"domain.lnd.{self.site_code}.{self.ctsm_date}.nc"
+
         # Add to created files list
         domain_file_list = \
             glob.glob(str(output_path) + f"/*{self.site_code}*.nc")
@@ -529,10 +533,12 @@ class SinglePointExtractor:
         script_name = "regridbatch_nlp.sh"
 
         cmd = self.machine.get_purge_str()
-        cmd += f"{script_path_string}/{script_name} 1x1_{self.site_code} "\
+        cmd += f"cd {script_path_string};" \
+            + f"{script_path_string}/{script_name} 1x1_{self.site_code} " \
             + f"{self.scrip_grid_file_path};" \
-            + f"mv map*{self.site_code}*.nc {output_path};"
+            + f"mv map*{self.site_code}*.nc {output_path}/;"
         cmd += self.machine.get_purge_str()
+        cmd += f"cd {self.code_dir};"
 
         # RUN
         self.run_process(cmd)
@@ -548,48 +554,72 @@ class SinglePointExtractor:
     ###########################################################################
 
     def _create_surface(self):
-        """TODO: Fix whatever this is"""
-        # Compile (Only need to be run the first time, better to run separately
-        # module load netCDF-Fortran/4.5.2-iimpi-2019b
-        # Modify Makefile.common. This has been done in "fates_emerald_api".
-        # gmake clean
-        # gmake
+        """Create surface map from previously created mapping files"""
 
         # Create folder
-        output_path = self.output_dir/'lnd'/'clm2'/'surfdata_map'/self.site_code
+        output_path = self.output_dir / 'lnd' / 'clm2' / 'surfdata_map' \
+            / self.site_code
         self.make_dir(output_path)
 
-        ### Call scripts to make mapping files
-        surface_scripts_path_string = str(
-                self.ctsm_path / '/tools/mksurfdata_map')
-        cmd = f'''{surface_scripts_path_string}/mksurfdata.pl -no-crop -res usrspec -usr_gname 1x1_{self.site_code} -usr_gdate {self.date} -usr_mapdir {self.output_dir}/lnd/clm2/mappingdata/maps/{self.site_code} -dinlc {self.root_path} -hirespft -years "2005" -allownofile;'''
-        + f'''mv surfdata*{self.site_code}* {output_path}'''
+        # Call scripts to make mapping files
+        script_path_string = str(self.ctsm_path / 'tools' / 'mksurfdata_map')
+        script_name = "mksurfdata.pl"
+
+        # Define map dir
+        map_dir_path = self.output_dir / 'lnd' / 'clm2' / 'mappingdata' / \
+            'maps' / self.site_code
+
+        cmd = self.machine.get_purge_str()
+        cmd += self.machine.generate_load_module_str('ncl')
+        cmd += "ulimit -s unlimited;"
+
+        # TODO: What does this script do exactly?
+        # What is "years"? Does this need to be adjustable? (also simyr2005)
+
+        cmd += f"cd {script_path_string};" \
+            + f"./{script_name} -no-crop -res usrspec -usr_gname " \
+            + f"1x1_{self.site_code} -usr_gdate {self.ctsm_date} -usr_mapdir" \
+            + f" {map_dir_path} -dinlc {self.root_path} -hirespft " \
+            + '''-years "2005" -allownofile;'''
+
+        cmd += f"mv surfdata_1x1_{self.site_code}_hist_16pfts_Irrig_CMIP6_" \
+            + f"simyr2005_c{self.ctsm_date}.nc " \
+            + f"surfdata_{self.site_code}_simyr2000.nc;" \
+            + f"mv surfdata*{self.site_code}* {output_path}/;"
+
+        cmd += self.machine.get_purge_str()
+        cmd += f"cd {self.code_dir};"
 
         # RUN
         self.run_process(cmd)
 
+        # Add to created files list
+        surface_file_list = \
+            glob.glob(str(output_path) + f"/surfdata*{self.site_code}*")
+        _ = [self._add_file_path_to_list(Path(f)) for f in surface_file_list]
+
         return True
 
-    ############################################################################
-    ############################################################################
+    ###########################################################################
+    ###########################################################################
     '''Land forcing functions'''
-    ############################################################################
-    ############################################################################
+    ###########################################################################
+    ###########################################################################
 
     def _create_land_aerosol(self):
         """TODO: Fix whatever this is"""
         pass
 
-    ############################################################################
+    ###########################################################################
 
     def _create_urban(self):
         """Create site .nc file for urban data"""
 
-        ### Call scripts to make mapping files
+        # Call script to make urban map
         ncl_script_dir = self.ncl_script_dir
         script_name = "urbandata_site_clm5.ncl"
 
-        # Paths from dict
+        # Paths from yaml
         root_str = str(self.root_path)
         nc_in_str = \
             self.instruction_dict['nc_input_paths']['land']['urban']
@@ -607,7 +637,7 @@ class SinglePointExtractor:
             ncl_file_path=f"{ncl_script_dir}/{script_name}",
             plot_name=str(self.site_code),
             nc_in_file_path=f"{root_str}/{nc_in_str}",
-            out_file_path=f"{out_str}/",  # IMPORTANT TO ADD TRAILING SLASH!
+            out_file_path=f"{out_str}/",  # IMPORTANT TO ADD TRAILING "/"!
             domain_file_path=str(self.domain_file_path)
         )
         cmd += self.machine.get_purge_str()
@@ -623,11 +653,11 @@ class SinglePointExtractor:
 
         return True
 
-    ############################################################################
+    ###########################################################################
 
     def _add_parameter_files(self):
 
-        # Paths from dict
+        # Paths from yaml
         root_str = str(self.root_path)
 
         out_path = self.output_dir/'lnd'/'clm2'/'paramdata'
@@ -652,16 +682,18 @@ class SinglePointExtractor:
 
         return True
 
-    ############################################################################
+    ###########################################################################
 
     def _create_fire(self):
-        """Create site/regional fire .nc file, i.e., regridding population density"""
+        """
+        Create site/regional fire .nc file, i.e., regridding population density
+        """
 
-        ### Call scripts to make mapping files
+        # Call scripts to create fire data
         ncl_script_dir = self.ncl_script_dir
         script_name = "popden_site_clm5.ncl"
 
-        # Paths from dict
+        # Paths from yaml
         root_str = str(self.root_path)
         nc_in_str = \
             self.instruction_dict['nc_input_paths']['land']['fire']
@@ -679,7 +711,7 @@ class SinglePointExtractor:
             ncl_file_path=f"{ncl_script_dir}/{script_name}",
             plot_name=str(self.site_code),
             nc_in_file_path=f"{root_str}/{nc_in_str}",
-            out_file_path=f"{out_str}/",  # IMPORTANT TO ADD TRAILING SLASH!
+            out_file_path=f"{out_str}/",  # IMPORTANT TO ADD TRAILING "/"!
             domain_file_path=str(self.domain_file_path)
         )
         cmd += self.machine.get_purge_str()
@@ -695,23 +727,74 @@ class SinglePointExtractor:
 
         return True
 
-    ############################################################################
-    ############################################################################
+    ###########################################################################
+    ###########################################################################
     '''Atmospheric forcing functions'''
-    ############################################################################
-    ############################################################################
+    ###########################################################################
+    ###########################################################################
+
+    def _create_climate(self):
+        """Create climate forcing, currently only using prepared GSWP3 data"""
+
+        # Call scripts to create topography data
+        ncl_script_dir = self.ncl_script_dir
+        script_name = "prepare_atm_forcing.ncl"
+
+        climate_dict = \
+            self.instruction_dict['nc_input_paths']['atmosphere']['climate']
+
+        # Paths from yaml
+        root_str = str(self.root_path)
+
+        if climate_dict['GSWP3']['root_path']:
+
+            nc_in_str = climate_dict['GSWP3']['root_path']
+
+            out_path = self.output_dir / 'atm' / 'datm7' / 'GSWP3v1' \
+                / self.site_code
+
+            if not out_path.is_dir():
+                self.make_dir(out_path)
+            out_str = str(out_path)
+
+            # Set up bash cmd
+            cmd = self.machine.get_purge_str()
+            cmd += self.machine.generate_load_module_str('ncl')
+
+            cmd += self.get_run_ncl_string(
+                ncl_file_path=f"{ncl_script_dir}/{script_name}",
+                plot_name=str(self.site_code),
+                nc_in_file_path=f"{root_str}/{nc_in_str}",
+                out_file_path=f"{out_str}/",  # IMPORTANT TO ADD TRAILING "/"!
+                plot_lat=self.lat,
+                plot_lon=self.lon,
+                year_start=climate_dict['GSWP3']['year_start'],
+                year_end=climate_dict['GSWP3']['year_end']
+            )
+            cmd += self.machine.get_purge_str()
+
+            # RUN
+            self.run_process(cmd)
+
+            # Add dir to list
+            self._add_file_path_to_list(out_path)
+
+        return True
+
+    ###########################################################################
 
     def _create_atm_aerosol(self):
         """Create input .nc file for atmospheric aerosol deposition"""
 
-        ### Call scripts to make mapping files
+        # Call scripts to make mapping files
         ncl_script_dir = self.ncl_script_dir
         script_name = "aerdep_site_clm5.ncl"
 
-        # Paths from dict
+        # Paths from yaml
         root_str = str(self.root_path)
         nc_in_str = self.instruction_dict['nc_input_paths']['atmosphere']['aerosol_deposition']
-        out_path = self.output_dir/'atm'/'cam'/'chem'/'trop_mozart_aero'/'aero'
+        out_path = self.output_dir / 'atm' / 'cam' / 'chem' \
+            / 'trop_mozart_aero' / 'aero'
         if not out_path.is_dir():
             self.make_dir(out_path)
         out_str = str(out_path)
@@ -724,7 +807,7 @@ class SinglePointExtractor:
             ncl_file_path=f"{ncl_script_dir}/{script_name}",
             plot_name=str(self.site_code),
             nc_in_file_path=f"{root_str}/{nc_in_str}",
-            out_file_path=f"{out_str}/",  # IMPORTANT TO ADD TRAILING SLASH!
+            out_file_path=f"{out_str}/",  # IMPORTANT TO ADD TRAILING "/"!
             domain_file_path=str(self.domain_file_path)
         )
         cmd += self.machine.get_purge_str()
@@ -740,16 +823,16 @@ class SinglePointExtractor:
 
         return True
 
-    ############################################################################
+    ###########################################################################
 
     def _create_atm_lightning(self):
         """Create input .nc file for lightning"""
 
-        ### Call scripts to make mapping files
+        # Call scripts to make lightning files
         ncl_script_dir = self.ncl_script_dir
         script_name = "lightning_site_clm5.ncl"
 
-        # Paths from dict
+        # Paths from yaml
         root_str = str(self.root_path)
         nc_in_str = \
             self.instruction_dict['nc_input_paths']['atmosphere']['lightning']
@@ -767,7 +850,7 @@ class SinglePointExtractor:
             ncl_file_path=f"{ncl_script_dir}/{script_name}",
             plot_name=str(self.site_code),
             nc_in_file_path=f"{root_str}/{nc_in_str}",
-            out_file_path=f"{out_str}/",  # IMPORTANT TO ADD TRAILING SLASH!
+            out_file_path=f"{out_str}/",  # IMPORTANT TO ADD TRAILING "/"!
             domain_file_path=str(self.domain_file_path)
         )
         cmd += self.machine.get_purge_str()
@@ -788,16 +871,16 @@ class SinglePointExtractor:
     def _create_topography(self):
         """Create site elevation file to be read by DATM"""
 
-        ### Call scripts to make mapping files
+        # Call scripts to create topography data
         ncl_script_dir = self.ncl_script_dir
         script_name = "topo_site_clm5.ncl"
 
-        # Paths from dict
+        # Paths from yaml
         root_str = str(self.root_path)
         nc_in_str = \
             self.instruction_dict['nc_input_paths']['atmosphere']['topography']
 
-        out_path = self.output_dir/'atm'/'datm7'/'topo_forcing'
+        out_path = self.output_dir / 'atm' / 'datm7' / 'topo_forcing'
         if not out_path.is_dir():
             self.make_dir(out_path)
         out_str = str(out_path)
@@ -811,7 +894,7 @@ class SinglePointExtractor:
             plot_name=str(self.site_code),
             plot_height=self.elevation,
             nc_in_file_path=f"{root_str}/{nc_in_str}",
-            out_file_path=f"{out_str}/",  # IMPORTANT TO ADD TRAILING SLASH!
+            out_file_path=f"{out_str}/",  # IMPORTANT TO ADD TRAILING "/"!
             domain_file_path=str(self.domain_file_path)
         )
         cmd += self.machine.get_purge_str()
@@ -828,7 +911,8 @@ class SinglePointExtractor:
         return True
 
 
-################################################################################
+###############################################################################
+
 
     def tar_output(self):
         """Compress the files in the specified output dir into a Tarball"""
@@ -846,7 +930,7 @@ class SinglePointExtractor:
 
         self.run_process(cmd)
 
-        ### Tar folder
+        # Tar folder
         tar_dir_name = f"inputdata_version{self.version}_{self.site_code}.tar"
         cmd = f"tar -cvf {tar_dir_name} inputdata;"
         cmd += f"rm -r {tar_dir_path};"
@@ -855,21 +939,22 @@ class SinglePointExtractor:
         return True
 
 
-################################################################################
+###############################################################################
 """End class"""
-################################################################################
+###############################################################################
 
 
-################################################################################
-################################################################################
+###############################################################################
+###############################################################################
 """
 Main function
 """
-################################################################################
-################################################################################
+###############################################################################
+###############################################################################
 
 
 def main():
+
     args = get_parser().parse_args()
 
     today = date.today()
@@ -922,7 +1007,9 @@ def main():
               + "'python3 create_forcing_classic.py --help' for details.")
         sys.exit()
 
-    ###################### START CREATING INPUT DATA ##########################
+    """
+    Start creating input data
+    """
     for site_dict in recipe_dict_list:
 
         extractor = SinglePointExtractor(instruction_dict=site_dict,
@@ -931,6 +1018,8 @@ def main():
         # extractor.create_share_forcing()
         # extractor.create_land_forcing()
         # extractor.create_atmosphere_forcing()
+
+        # extractor.tar_output()
 
         # FOR TESTING, EXECUTE EACH FUNCTION INDIVIDUALLY
         user_in = input("Create scrip? [y/n]: ")
@@ -944,6 +1033,14 @@ def main():
         user_in = input("Create mapping? [y/n]: ")
         if user_in.lower() == "y":
             extractor._create_mapping()
+
+        user_in = input("Create surface? [y/n]: ")
+        if user_in.lower() == "y":
+            extractor._create_surface()
+
+        user_in = input("Create climate? [y/n]: ")
+        if user_in.lower() == "y":
+            extractor._create_climate()
 
         user_in = input("Create aero dep? [y/n]: ")
         if user_in.lower() == "y":
@@ -969,8 +1066,7 @@ def main():
         if user_in.lower() == "y":
             extractor._add_parameter_files()
 
-        # extractor.tar_output()
-
 
 if __name__ == "__main__":
+
     main()

@@ -44,7 +44,10 @@ nc_input_paths:
   # Atmospheric component
   atmosphere:
     climate:
-      GSWP3: atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v1.c170516
+      GSWP3:
+        root_path: atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v1.c170516
+        year_start: 1901
+        year_end: 2010
     topography: atm/datm7/topo_forcing/topodata_0.9x1.25_USGS_070110_stream_c151201.nc
     lightning: atm/datm7/NASA_LIS/clmforc.Li_2016_climo1995-2013.360x720.lnfm_Total_c160825.nc
     aerosol_deposition: atm/cam/chem/trop_mozart_aero/aero/aerosoldep_WACCM.ensmean_monthly_hist_1849-2015_0.9x1.25_CMIP6_c180926.nc
