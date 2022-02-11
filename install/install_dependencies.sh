@@ -35,6 +35,7 @@ fi;
 if ! [ -d $HOME/.cime ]; then
     module load git/2.23.0-GCCcore-8.3.0
     git clone $DOT_CIME_REMOTE $HOME/.cime
+    cd $HOME/.cime
     git checkout -b nlp-input-temp $DOT_CIME_SHA
     module purge
     echo "Done cloning .cime folder!"
