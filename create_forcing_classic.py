@@ -32,11 +32,8 @@ import sys
 import logging
 import logging.handlers
 import subprocess
-import argparse
 import glob
 import yaml
-import tarfile
-import re
 
 from datetime import date
 from argparse import ArgumentParser
@@ -44,11 +41,11 @@ from argparse import RawTextHelpFormatter
 from pathlib import Path, PurePosixPath
 from typing import Union
 
-################################################################################
+###############################################################################
 """
 Define argument parser
 """
-################################################################################
+###############################################################################
 
 
 def get_parser():
@@ -75,11 +72,11 @@ def get_parser():
     return parser
 
 
-################################################################################
+###############################################################################
 """
 Define logger
 """
-################################################################################
+###############################################################################
 
 
 class StreamToLogger(object):
@@ -131,7 +128,7 @@ class StreamToLogger(object):
             self.logger.log(self.log_level, self.linebuf.rstrip())
         self.linebuf = ''
 
-################################################################################
+###############################################################################
 
 
 def setup_logging(log_file, log_level):
@@ -164,11 +161,11 @@ def setup_logging(log_file, log_level):
     StreamToLogger.setup_stderr()
 
 
-################################################################################
+###############################################################################
 """
 Helper functions
 """
-################################################################################
+###############################################################################
 
 
 def read_yaml_as_dict(file_path: Union[Path, str]) -> dict:
@@ -186,16 +183,16 @@ def read_yaml_as_dict(file_path: Union[Path, str]) -> dict:
     return dict_
 
 
-################################################################################
+###############################################################################
 """
 Classes
 """
-################################################################################
+###############################################################################
 
 
 class Machine:
 
-    ### Path to the machine definition yaml file, keep in same folder!
+    # Path to the machine definition yaml file, keep in same folder!
     definition_yaml_file = Path(__file__).parent / 'machine_properties.yaml'
 
     def __init__(self, name: str):
@@ -219,18 +216,19 @@ class Machine:
     def __str__(self):
         return f"Machine name: {self.name}"
 
-################################################################################
-################################################################################
+###############################################################################
+###############################################################################
 
 
 class SinglePointExtractor:
     """Documentation!"""
 
     minimum_required = ('surface', 'urban', 'dominant_river_tracing',
-                        'optical_properties', 'fire', 'clm', 'fates', 'GSWP3', 'topography',
-                        'lightning', 'aerosol_deposition')
+                        'optical_properties', 'fire', 'clm', 'fates', 'GSWP3',
+                        'topography', 'lightning', 'aerosol_deposition')
 
-    scrip_file_path = None
+    scrip_map_file_path = None
+    scrip_grid_file_path = None
     domain_file_path = None
     mapping_file_path = None
 
@@ -281,9 +279,9 @@ class SinglePointExtractor:
             sys.exit()
         self._check_shared_input()
 
-    ############################################################################
-    ############################################################################
-    ############################################################################
+    ###########################################################################
+    ###########################################################################
+    ###########################################################################
 
     @staticmethod
     def make_dir(path: Union[Path, str]) -> bool:
@@ -293,19 +291,19 @@ class SinglePointExtractor:
             path.mkdir(parents=True, exist_ok=False)
             print(f"Created directory '{path}'.")
         except:
-            print(f"Error when creating '{path}'. Make sure all parent "
-                  + "directories exist and there is no folder with the same name!")
+            print(f"Error when creating '{path}'. Make it is valid and "
+                  + "that there is no folder with the same name!")
             raise
         return True
 
-    ############################################################################
+    ###########################################################################
 
     @classmethod
     def print_minimum_required(cls):
-        print(f"Please supply at least the following inputs:")
+        print("Please supply at least the following inputs:")
         print(", ".join(val for val in cls.minimum_required))
 
-    ############################################################################
+    ###########################################################################
 
     def ceck_minimum_required(self, ins_dict: dict) -> bool:
         for key, value in ins_dict.items():
@@ -329,8 +327,10 @@ class SinglePointExtractor:
                             "You must provide a path if 'create_new' is 'no'!")
 
         if not dict_['SCRIP']['create_new']:
-            self.scrip_file_path = \
-                Path(dict_['SCRIP']['path']).expanduser()
+            self.scrip_map_file_path = \
+                Path(dict_['SCRIP']['map_path']).expanduser()
+            self.scrip_grid_file_path = \
+                Path(dict_['SCRIP']['grid_path']).expanduser()
         if not dict_['domain']['create_new']:
             self.domain_file_path = \
                 Path(dict_['domain']['path']).expanduser()
@@ -340,7 +340,7 @@ class SinglePointExtractor:
 
         return True
 
-    ############################################################################
+    ###########################################################################
 
     @staticmethod
     def run_process(cmd, env=None):
@@ -349,17 +349,19 @@ class SinglePointExtractor:
         print(f'\nEXECUTING\n{cmd}\n')
         proc = subprocess.run(cmd, env=env, shell=True, check=True,
                               capture_output=True)
-        print(proc.stderr)
-        print(proc.stdout)
+        print((proc.stderr).decode("utf-8"))
+        print((proc.stdout).decode("utf-8"))
         print('DONE!\n')
 
         return str(proc.stdout)
 
-    ############################################################################
+    ###########################################################################
 
     @staticmethod
     def get_run_ncl_string(ncl_file_path: str, **kwargs) -> str:
-        """Generate a string for running ncl files with arbitrary nr. of arguments"""
+        """
+        Generate a string for running ncl files with arbitrary nr. of arguments
+        """
 
         cmd = "ncl "
         cmd += " ".join([f"""'{key}="{val}"'""" if isinstance(val, str)
@@ -368,27 +370,27 @@ class SinglePointExtractor:
 
         return cmd
 
-    ############################################################################
+    ###########################################################################
 
     def _add_file_path_to_list(self, path: Union[Path, str]):
         self.created_files_path_list.append(path)
 
-    ############################################################################
-    ############################################################################
-    ############################################################################
+    ###########################################################################
+    ###########################################################################
+    ###########################################################################
 
     def create_share_forcing(self):
         """Run functions to create shared forcing files"""
 
         share_dict = self.instruction_dict['nc_input_paths']['share']
         if share_dict['SCRIP']['create_new']:
-            print(f"Creating new SCRIP file...")
+            print("Creating new SCRIP file...")
             self._create_scrip(share_dict),
         if share_dict['domain']['create_new']:
-            print(f"Creating new domain file...")
+            print("Creating new domain file...")
             self._create_domain(share_dict)
         if share_dict['mapping']['create_new']:
-            print(f"Creating new mapping file...")
+            print("Creating new mapping file...")
             self._create_mapping(share_dict)
 
     ###########################################################################
@@ -396,11 +398,13 @@ class SinglePointExtractor:
     def create_land_forcing(self):
         """Run functions to create land forcing files"""
 
-        if self.instruction_dict['nc_input_paths']['land']['urban']:
+        land_dict = self.instruction_dict['nc_input_paths']['land']
+
+        if land_dict['urban']:
             self._create_urban()
-        if self.instruction_dict['nc_input_paths']['land']['parameter_files']['clm']:
+        if land_dict['parameter_files']['clm']:
             self._create_clm_param()
-        if self.instruction_dict['nc_input_paths']['land']['parameter_files']['fates']:
+        if land_dict['parameter_files']['fates']:
             self._create_fates_param()
 
     ###########################################################################
@@ -408,7 +412,9 @@ class SinglePointExtractor:
     def create_atm_forcing(self):
         """Run functions to create atmospheric forcing files"""
 
-        if self.instruction_dict['nc_input_paths']['atmosphere']['aerosol_deposition']:
+        atm_dict = self.instruction_dict['nc_input_paths']['atmosphere']
+
+        if atm_dict['aerosol_deposition']:
             self._create_atm_aerosol()
 
     ###########################################################################
@@ -447,13 +453,23 @@ class SinglePointExtractor:
         # Add to created files list
         _ = [self._add_file_path_to_list(Path(f)) for f in nc_file_list]
 
-        # Update SCRIP file variable
+        # Update SCRIP map variables
         file_expr = f"/map_{self.site_code}_noocean_to_{self.site_code}" \
             + f"_nomask_aave_da_{self.ctsm_date}.nc"
         scrip_file = glob.glob(str(output_path) + file_expr)
 
         if len(scrip_file) == 1:
-            self.scrip_file_path = Path(scrip_file[0])
+            self.scrip_map_file_path = Path(scrip_file[0])
+        else:
+            raise ValueError(f"More than one or no file matching '{file_expr}'"
+                             + f" in {output_path}!")
+
+        # Update SCRIP grid variable
+        file_expr = f"/SCRIPgrid_{self.site_code}_nomask_c{self.ctsm_date}.nc"
+        scrip_file = glob.glob(str(output_path) + file_expr)
+
+        if len(scrip_file) == 1:
+            self.scrip_grid_file_path = Path(scrip_file[0])
         else:
             raise ValueError(f"More than one or no file matching '{file_expr}'"
                              + f" in {output_path}!")
@@ -475,8 +491,9 @@ class SinglePointExtractor:
 
         cmd = self.machine.get_purge_str()
         cmd += f". {script_path_str}/src/.env_mach_specific.sh;"
-        cmd += f"{script_path_str}/{script_name} -m {self.scrip_file_path} " \
-            + f"-o ${self.site_code} -l ${self.site_code};"
+        cmd += f"{script_path_str}/{script_name} -m {self.scrip_map_file_path} " \
+            + f"-o {self.site_code} -l {self.site_code};"
+        cmd += self.machine.get_purge_str()
 
         # RUN
         self.run_process(cmd)
@@ -490,41 +507,53 @@ class SinglePointExtractor:
         # RUN
         self.run_process(cmd)
 
+        # Add to created files list
+        domain_file_list = \
+            glob.glob(str(output_path) + f"/*{self.site_code}*.nc")
+        _ = [self._add_file_path_to_list(Path(f)) for f in domain_file_list]
+
         return True
 
     ###########################################################################
 
     def _create_mapping(self):
-        """Create a new no-ocean mapping file using ctsm's mknoocnmap.pl"""
+        """Create a new mapping file using ctsm's regridbatch.sh"""
 
         # Create folder
         output_path = self.output_dir / 'lnd' / 'clm2' / 'mappingdata' / \
             'maps' / self.site_code
         self.make_dir(output_path)
 
-        ### Call scripts to make mapping files
-        map_scripts_path_string = str(self.ctsm_path / '/tools/mkmapdata')
+        # Call scripts to make mapping files
+        script_path_string = str(self.ctsm_path / 'tools' / 'mkmapdata')
+        script_name = "regridbatch_nlp.sh"
 
-        cmd = f"{map_scripts_path_string}/regridbatch.sh 1x1_{self.site_code} "\
-            + f"{self.output_dir}/share/scripgrids/{self.output_dir}/SCRIPgrid_{self.output_dir}_nomask_c{self.date}.nc;" \
-            + f"mv {map_scripts_path_string}/map*{self.output_dir}*.nc " \
-            + f"{output_path};"
+        cmd = self.machine.get_purge_str()
+        cmd += f"{script_path_string}/{script_name} 1x1_{self.site_code} "\
+            + f"{self.scrip_grid_file_path};" \
+            + f"mv map*{self.site_code}*.nc {output_path};"
+        cmd += self.machine.get_purge_str()
 
         # RUN
         self.run_process(cmd)
 
+        # Add to created files list
+        mapping_file_list = \
+            glob.glob(str(output_path) + f"/map*{self.site_code}*.nc")
+        _ = [self._add_file_path_to_list(Path(f)) for f in mapping_file_list]
+
         return True
 
-    ############################################################################
-    ############################################################################
+    ###########################################################################
+    ###########################################################################
 
     def _create_surface(self):
         """TODO: Fix whatever this is"""
-        # Compile (Only need to be run the first time, better to run separately)
-        #module load netCDF-Fortran/4.5.2-iimpi-2019b
-        #Modify Makefile.common. This has been done in "fates_emerald_api".
-        #gmake clean
-        #gmake
+        # Compile (Only need to be run the first time, better to run separately
+        # module load netCDF-Fortran/4.5.2-iimpi-2019b
+        # Modify Makefile.common. This has been done in "fates_emerald_api".
+        # gmake clean
+        # gmake
 
         # Create folder
         output_path = self.output_dir/'lnd'/'clm2'/'surfdata_map'/self.site_code
@@ -801,7 +830,6 @@ class SinglePointExtractor:
 
 ################################################################################
 
-
     def tar_output(self):
         """Compress the files in the specified output dir into a Tarball"""
 
@@ -912,6 +940,10 @@ def main():
         user_in = input("Create domain? [y/n]: ")
         if user_in.lower() == "y":
             extractor._create_domain()
+
+        user_in = input("Create mapping? [y/n]: ")
+        if user_in.lower() == "y":
+            extractor._create_mapping()
 
         user_in = input("Create aero dep? [y/n]: ")
         if user_in.lower() == "y":

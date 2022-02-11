@@ -21,14 +21,15 @@ nc_input_paths:
   # Shared by different components
   share:
     SCRIP:
-      create_new: no  # yes or no
-      path: /cluster/shared/noresm/inputdata_fates_platform/share/scripgrids/
+      create_new: yes  # yes or no
+      map_path: ~/
+      grid_path: ~/
     domain:
-      create_new: no  # yes or no
+      create_new: yes  # yes or no
       path: /cluster/shared/noresm/inputdata_fates_platform/share/domains/ALP4/domain.lnd.ALP4.200422.nc
     mapping:
-      create_new: no  # yes or no
-      path: /cluster/shared/noresm/inputdata_fates_platform/share/
+      create_new: yes  # yes or no
+      path: ~/
   # Land component
   land:
     surface: lnd/clm2/surfdata_map/release-clm5.0.18/surfdata_0.9x1.25_hist_16pfts_Irrig_CMIP6_simyr2000_c190214.nc

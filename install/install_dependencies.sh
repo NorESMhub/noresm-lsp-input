@@ -66,6 +66,14 @@ if ! [ -f mksurfdata_map ]; then
 fi;
 cd $DIR_CODE
 
+# Copy regridbatch_nlp.sh if needed
+cd $DIR_CTSM/tools/mkmapdata
+if ! [ -f regridbatch_nlp.sh ]; then
+  cp $DIR_CODE/external_scripts/bash/regridbatch_nlp.sh .
+  chmod +x ./regridbatch_nlp.sh
+fi;
+cd $DIR_CODE
+
 # Create virtual environment
 module load Python/3.9.6-GCCcore-11.2.0
 if [ -d $DIR_ENV ]; then
