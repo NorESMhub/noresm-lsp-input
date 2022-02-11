@@ -391,7 +391,7 @@ class SinglePointExtractor:
             print(f"Creating new mapping file...")
             self._create_mapping(share_dict)
 
-    ############################################################################
+    ###########################################################################
 
     def create_land_forcing(self):
         """Run functions to create land forcing files"""
@@ -403,7 +403,7 @@ class SinglePointExtractor:
         if self.instruction_dict['nc_input_paths']['land']['parameter_files']['fates']:
             self._create_fates_param()
 
-    ############################################################################
+    ###########################################################################
 
     def create_atm_forcing(self):
         """Run functions to create atmospheric forcing files"""
@@ -468,32 +468,31 @@ class SinglePointExtractor:
         # Create folder
         output_path = self.output_dir / 'share' / 'domains' / self.site_code
         self.make_dir(output_path)
+        # Create domain file script
+        script_path_str = str(self.ctsm_path / 'cime' / 'tools'
+                              / 'mapping' / 'gen_domain_files')
         script_name = "gen_domain"
 
-        # Call scripts to make domain files
-        domain_scripts_path_str = str(self.ctsm_path / 'cime' / 'tools'
-                                      / 'mapping' / 'gen_domain_files')
-
-        cmd = domain_scripts_path_str + "/src/.env_mach_specific.sh;"
-        cmd += f"{domain_scripts_path_str}/{script_name} -m " \
-            + f"{self.output_dir}/share/scripgrids/{self.site_code}/"\
-            + f"map_{self.site_code}_noocean_to_{self.site_code}_nomask" \
-            + f"_aave_da_{self.date}.nc -o ${self.site_code} -l ${self.site_code}"
+        cmd = self.machine.get_purge_str()
+        cmd += f". {script_path_str}/src/.env_mach_specific.sh;"
+        cmd += f"{script_path_str}/{script_name} -m {self.scrip_file_path} " \
+            + f"-o ${self.site_code} -l ${self.site_code};"
 
         # RUN
         self.run_process(cmd)
 
-        ### Move new files to created script directory
-        cmd = f"mv {domain_scripts_path_str}/domain.lnd.{self.site_code}_{self.site_code}.{self.date}.nc " \
-            + f"domain.lnd.{self.site_code}.{self.date}.nc;" \
-            + f"mv {domain_scripts_path_str}/domain*{self.site_code}*.nc " \
-            + f"{output_path};"
+        # Move new files to created script directory
+        cmd = f"mv domain.lnd.{self.site_code}_{self.site_code}" \
+            + f".{self.ctsm_date}.nc " \
+            + f"domain.lnd.{self.site_code}.{self.ctsm_date}.nc;" \
+            + f"mv domain*{self.site_code}*.nc " \
+            + f"{output_path}/;"
         # RUN
         self.run_process(cmd)
 
         return True
 
-    ############################################################################
+    ###########################################################################
 
     def _create_mapping(self):
         """Create a new no-ocean mapping file using ctsm's mknoocnmap.pl"""
@@ -801,6 +800,7 @@ class SinglePointExtractor:
 
 
 ################################################################################
+
 
     def tar_output(self):
         """Compress the files in the specified output dir into a Tarball"""
