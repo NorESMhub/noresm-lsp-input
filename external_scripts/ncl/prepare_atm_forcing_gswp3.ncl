@@ -59,7 +59,6 @@ begin
    mon@units  = "month"
    month =cd_string(mon,"%N")
 
-   system("mkdir -p "+ out_file_path)
    xfloor=plot_lon-0.005
    xceil =plot_lon+0.005
    yfloor=plot_lat-0.005
