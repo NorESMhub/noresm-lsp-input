@@ -6,7 +6,7 @@ CTSM_REMOTE=https://github.com/ESCOMP/CTSM.git
 CTSM_RELEASE_TAG=ctsm5.1.dev043
 
 DOT_CIME_REMOTE=https://github.com/MetOs-UiO/dotcime.git
-DOT_CIME_SHA=30a2b73
+DOT_CIME_SHA=30a2b73996a951277c874d9f28ea82a00427ffb2
 
 # Set paths
 DIR_CTSM=$HOME/ctsm
