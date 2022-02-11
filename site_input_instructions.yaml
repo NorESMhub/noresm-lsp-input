@@ -1,11 +1,11 @@
 ---
-site_name: Iskoras # Long name, added to meta data
+site_name: SeedClim_ALP4 # Long name, added to meta data
 site_code: ALP4 # Site code, determines naming of the output dirs/files
 version: 2.1.0 # OBS! Sites with the same version must use the same .nc files
 coordinates: # Geographic coordinates, decimal (WGS84)
-  lat: 69.3408715
-  lon: 25.29547425
-elevation: 360 # m above sea level [m.a.s.l.]
+  lat: 60.9335
+  lon: 6.41504
+elevation: 1088 # m above sea level [m.a.s.l.]
 meta_info:
   doc_url: https://www.mn.uio.no/geo/english/research/groups/latice/
   meta_url: https://www.mn.uio.no/geo/english/research/groups/latice/

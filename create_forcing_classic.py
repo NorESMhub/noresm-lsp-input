@@ -26,7 +26,7 @@ Parts of the code are heavily inspired by NCARs subset_data.py tool:
 https://github.com/ESCOMP/CTSM/blob/master/tools/site_and_regional/subset_data.py
 """
 
-### Library imports
+# Library imports
 # Python standard library
 import sys
 import logging
@@ -36,6 +36,7 @@ import argparse
 import glob
 import yaml
 import tarfile
+import re
 
 from datetime import date
 from argparse import ArgumentParser
@@ -57,19 +58,20 @@ def get_parser():
                             formatter_class=RawTextHelpFormatter)
 
     parser.add_argument("-f", "--file",
-                        help="path to a single yaml file containing the input data extraction "
-                        + "recipe.", action="store", dest="yaml_file", required=False,
-                        type=str, default='')
+                        help="path to a single yaml file containing the input "
+                        + "data extraction recipe.", action="store",
+                        dest="yaml_file", required=False, type=str,
+                        default='site_input_instructions.yaml')
 
     parser.add_argument("-d", "--dir",
-                        help="path to a directory containing yaml files with input data "
-                        + "extraction recipes.", action="store", dest="yaml_dir", required=False,
-                        default='')
+                        help="path to a directory containing yaml files with "
+                        + "input data extraction recipes.", action="store",
+                        dest="yaml_dir", required=False, default='')
 
     parser.add_argument("-m", "--machine",
-                        help="name of one of the machines defined in 'machine_properties.yaml'",
-                        action="store", dest="machine", required=True, default='saga')
-
+                        help="name of one of the machines defined in "
+                        + "'machine_properties.yaml'", action="store",
+                        dest="machine", required=False, default='saga')
     return parser
 
 
@@ -239,6 +241,7 @@ class SinglePointExtractor:
 
         self.version = self.instruction_dict['version']
         self.date = date.today().strftime("%Y-%m-%d")
+        self.ctsm_date = date.today().strftime("%y%m%d")
 
         self.site_name = self.instruction_dict['site_name']
         self.site_code = self.instruction_dict['site_code']
@@ -408,54 +411,71 @@ class SinglePointExtractor:
         if self.instruction_dict['nc_input_paths']['atmosphere']['aerosol_deposition']:
             self._create_atm_aerosol()
 
-    ############################################################################
-    ############################################################################
+    ###########################################################################
+    ###########################################################################
     '''Share forcing functions'''
-    ############################################################################
-    ############################################################################
+    ###########################################################################
+    ###########################################################################
 
     def _create_scrip(self):
-        ### Create folder
+        """Create a new no-ocean SCRIP file using ctsm's mknoocnmap.pl"""
+
         output_path = self.output_dir / 'share' / 'scripgrids' / self.site_code
         self.make_dir(output_path)
 
-        ### Call perl script to make script files
+        # Call perl script to make script files
         script_path_str = \
-            str(self.ctsm_path / 'ctsm/tools/mkmapdata/mknoocnmap.pl')
+            str(self.ctsm_path / 'tools' / 'mkmapdata' / 'mknoocnmap.pl')
 
-        cmd = script_path_str \
+        # Execute script with site arguments
+        # LOAD NCL
+        cmd = self.machine.get_purge_str()
+        cmd += self.machine.generate_load_module_str('ncl')
+        cmd += script_path_str \
             + f" -centerpoint {self.lat},{self.lon} -name {self.site_code} " \
             + "-dx 0.01 -dy 0.01;"
-        subprocess.run(cmd, shell=True, check=True)
-
-        ### Move new files to created script directory
-        cmd = f"mv {script_path_str}/tools/mkmapgrids/*{self.site_code}*.nc " \
-            + f"{output_path}"
+        # Copy output file
+        cmd += f"mv {self.ctsm_path}/tools/mkmapgrids/*{self.site_code}*.nc "\
+            + f"{output_path}/;"  # Trailing "/" important!
+        cmd += self.machine.get_purge_str()
 
         # RUN
         self.run_process(cmd)
 
+        # Retrieve file names for created SCRIP grids
+        nc_file_list = glob.glob(str(output_path) + f"/*{self.site_code}*.nc")
+        # Add to created files list
+        _ = [self._add_file_path_to_list(Path(f)) for f in nc_file_list]
+
+        # Update SCRIP file variable
+        file_expr = f"/map_{self.site_code}_noocean_to_{self.site_code}" \
+            + f"_nomask_aave_da_{self.ctsm_date}.nc"
+        scrip_file = glob.glob(str(output_path) + file_expr)
+
+        if len(scrip_file) == 1:
+            self.scrip_file_path = Path(scrip_file[0])
+        else:
+            raise ValueError(f"More than one or no file matching '{file_expr}'"
+                             + f" in {output_path}!")
+
         return True
 
-    ############################################################################
+    ###########################################################################
 
     def _create_domain(self):
-        """TODO: Fix whatever this is:"""
-        #### Compile (Only need to be run at the first time, better to run separately)
-        #cd src/
-        #../../../configure --macros-format Makefile --mpilib mpi-serial --machine saga
-        #. ./.env_mach_specific.sh ; gmake
+        """Create domain file using ctsm's ./gen_domain"""
 
         # Create folder
         output_path = self.output_dir / 'share' / 'domains' / self.site_code
         self.make_dir(output_path)
+        script_name = "gen_domain"
 
-        ### Call scripts to make domain files
-        domain_scripts_path_str = \
-            str(self.ctsm_path / '/cime/tools/mapping/gen_domain_files/')
+        # Call scripts to make domain files
+        domain_scripts_path_str = str(self.ctsm_path / 'cime' / 'tools'
+                                      / 'mapping' / 'gen_domain_files')
 
-        cmd = domain_scripts_path_str + f"/src/.env_mach_specific.sh;" \
-            + f"{domain_scripts_path_str}/gen_domain -m "\
+        cmd = domain_scripts_path_str + "/src/.env_mach_specific.sh;"
+        cmd += f"{domain_scripts_path_str}/{script_name} -m " \
             + f"{self.output_dir}/share/scripgrids/{self.site_code}/"\
             + f"map_{self.site_code}_noocean_to_{self.site_code}_nomask" \
             + f"_aave_da_{self.date}.nc -o ${self.site_code} -l ${self.site_code}"
@@ -476,8 +496,7 @@ class SinglePointExtractor:
     ############################################################################
 
     def _create_mapping(self):
-        """TODO: Fix whatever this is:"""
-        # Modify regridbatch.sh. This has been done in "fates_emerald_api".
+        """Create a new no-ocean mapping file using ctsm's mknoocnmap.pl"""
 
         # Create folder
         output_path = self.output_dir / 'lnd' / 'clm2' / 'mappingdata' / \
@@ -783,7 +802,6 @@ class SinglePointExtractor:
 
 ################################################################################
 
-
     def tar_output(self):
         """Compress the files in the specified output dir into a Tarball"""
 
@@ -876,17 +894,21 @@ def main():
               + "'python3 create_forcing_classic.py --help' for details.")
         sys.exit()
 
-    ###################### START CREATING INPUT DATA ###########################
+    ###################### START CREATING INPUT DATA ##########################
     for site_dict in recipe_dict_list:
 
         extractor = SinglePointExtractor(instruction_dict=site_dict,
                                          machine=machine)
 
-        #extractor.create_share_forcing()
-        #extractor.create_land_forcing()
-        #extractor.create_atmosphere_forcing()
+        # extractor.create_share_forcing()
+        # extractor.create_land_forcing()
+        # extractor.create_atmosphere_forcing()
 
-        ### FOR TESTING, EXECUTE EACH FUNCTION INDIVIDUALLY
+        # FOR TESTING, EXECUTE EACH FUNCTION INDIVIDUALLY
+        user_in = input("Create scrip? [y/n]: ")
+        if user_in.lower() == "y":
+            extractor._create_scrip()
+
         user_in = input("Create aero dep? [y/n]: ")
         if user_in.lower() == "y":
             extractor._create_atm_aerosol()
@@ -911,7 +933,7 @@ def main():
         if user_in.lower() == "y":
             extractor._add_parameter_files()
 
-        #extractor.tar_output()
+        # extractor.tar_output()
 
 
 if __name__ == "__main__":
