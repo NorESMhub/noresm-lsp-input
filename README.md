@@ -24,7 +24,7 @@ vi site_input_instructions.yaml
 ```
 Use the file as a recipe to create new compressed input via:
 ```
-python3 create_forcing_clmtools.py -f [name_of_file].yml
+python3 create_forcing_classic.py -f [name_of_file].yml -m [name_of_machine]
 ```
 
 #### 1.2.2 Add multiple new sites
@@ -36,5 +36,5 @@ Add as many instruction files using the `site_input_instructions.yaml` template
 as you like into `mysites/` (following step 1.2.1).
 Subsequently, run:
 ```
-python3 create_forcing_clmtools.py -d ./mysites/
+python3 create_forcing_classic.py -d ./mysites/ -m saga
 ```
