@@ -2,24 +2,26 @@
 set -e
 
 # Repo links and release version
-CTSM_REMOTE=https://github.com/lasseke/ctsm.git
-CTSM_RELEASE_TAG=release-emerald-platform3.0.0
+CTSM_REMOTE=https://github.com/ESCOMP/CTSM.git
+CTSM_RELEASE_TAG=ctsm5.1.dev043
+
 DOT_CIME_REMOTE=https://github.com/MetOs-UiO/dotcime.git
+DOT_CIME_SHA=30a2b73
 
 # Set paths
 DIR_CTSM=$HOME/ctsm
-DIR_CODE=$PWD/$(dirname "${BASH_SOURCE[0]}")
+DIR_CODE=$(dirname $(readlink -f "$0"))/..
 DIR_ENV=$DIR_CODE/env
 
 DIR_INST=$DIR_CODE/install
-DIR_CONF=$DIR_CODE/config
+PATH_MAKEFILE=$DIR_INST/Makefile.common
 
 # Get CTSM (if needed)
 if ! [ -d $DIR_CTSM ]; then
     module load git/2.23.0-GCCcore-8.3.0
     git clone $CTSM_REMOTE $DIR_CTSM
     cd $DIR_CTSM
-    git checkout tags/$CTSM_RELEASE_TAG -b nlp-input-temp
+    git checkout -b nlp-input-temp tags/$CTSM_RELEASE_TAG
     python3 ./manage_externals/checkout_externals
     module purge
     echo "Done setting up CTSM!"
@@ -33,6 +35,7 @@ fi;
 if ! [ -d $HOME/.cime ]; then
     module load git/2.23.0-GCCcore-8.3.0
     git clone $DOT_CIME_REMOTE $HOME/.cime
+    git checkout -b nlp-input-temp $DOT_CIME_SHA
     module purge
     echo "Done cloning .cime folder!"
 else
@@ -44,21 +47,21 @@ fi;
 # Compile gen_domain (if needed)
 cd $DIR_CTSM/cime/tools/mapping/gen_domain_files
 if ! [ -f gen_domain ]; then
-    cd src
-    ../../../configure --macros-format Makefile --mpilib mpi-serial --machine saga
-    . ./.env_mach_specific.sh ; gmake
+  cd src
+  ../../../configure --macros-format Makefile --mpilib mpi-serial --machine saga
+  . ./.env_mach_specific.sh ; gmake
 fi;
 cd $DIR_CODE
 
 # Compile mksurfdat (if needed)
 cd $DIR_CTSM/tools/mksurfdata_map
 if ! [ -f mksurfdata_map ]; then
-    cd src
-    cp $DIR_CONF/Makefile.common ./Makefile.common
-    module load netCDF-Fortran/4.5.2-iimpi-2019b
-    gmake clean
-    gmake -j 8
-    module purge
+  cd src
+  cp $PATH_MAKEFILE ./Makefile.common
+  module load netCDF-Fortran/4.5.2-iimpi-2019b
+  gmake clean
+  gmake -j 8
+  module purge
 fi;
 cd $DIR_CODE
 

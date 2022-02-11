@@ -48,39 +48,45 @@ from typing import Union
 Define argument parser
 """
 ################################################################################
+
+
 def get_parser():
-        """Get parser object for this script."""
+    """Get parser object for this script."""
 
-        parser = ArgumentParser(description=__doc__,
-        formatter_class=RawTextHelpFormatter)
+    parser = ArgumentParser(description=__doc__,
+                            formatter_class=RawTextHelpFormatter)
 
-        parser.add_argument("-f", "--file",
-        help="path to a single yaml file containing the input data extraction "\
-        + "recipe.", action="store", dest="yaml_file", required=False,
-        type = str, default='')
+    parser.add_argument("-f", "--file",
+                        help="path to a single yaml file containing the input data extraction "
+                        + "recipe.", action="store", dest="yaml_file", required=False,
+                        type=str, default='')
 
-        parser.add_argument("-d", "--dir",
-        help="path to a directory containing yaml files with input data "\
-        + "extraction recipes.", action="store", dest="yaml_dir", required=False,
-        default='')
+    parser.add_argument("-d", "--dir",
+                        help="path to a directory containing yaml files with input data "
+                        + "extraction recipes.", action="store", dest="yaml_dir", required=False,
+                        default='')
 
-        parser.add_argument("-m", "--machine",
-        help="name of one of the machines defined in 'machine_properties.yaml'",
-        action="store", dest="machine", required=True, default='saga')
+    parser.add_argument("-m", "--machine",
+                        help="name of one of the machines defined in 'machine_properties.yaml'",
+                        action="store", dest="machine", required=True, default='saga')
 
-        return parser
+    return parser
+
 
 ################################################################################
 """
 Define logger
 """
 ################################################################################
+
+
 class StreamToLogger(object):
     """
     Custom class to log all stdout and stderr streams.
     modified from:
     https://www.electricmonk.nl/log/2011/08/14/redirect-stdout-and-stderr-to-a-logger-in-python/
     """
+
     def __init__(self, stream, logger, log_level=logging.INFO,
                  also_log_to_stream=False):
         self.logger = logger
@@ -96,7 +102,7 @@ class StreamToLogger(object):
         """
         stdout_logger = logging.getLogger('STDOUT')
         sl = StreamToLogger(sys.stdout, stdout_logger, logging.INFO,
-        also_log_to_stream)
+                            also_log_to_stream)
         sys.stdout = sl
 
     @classmethod
@@ -106,7 +112,7 @@ class StreamToLogger(object):
         """
         stderr_logger = logging.getLogger('STDERR')
         sl = StreamToLogger(sys.stderr, stderr_logger, logging.ERROR,
-        also_log_to_stream)
+                            also_log_to_stream)
         sys.stderr = sl
 
     def write(self, buf):
@@ -125,6 +131,7 @@ class StreamToLogger(object):
 
 ################################################################################
 
+
 def setup_logging(log_file, log_level):
     """
     Setup logging to log to console and log file.
@@ -136,7 +143,7 @@ def setup_logging(log_file, log_level):
     # setup log file
     one_mb = 1000000
     handler = logging.handlers.RotatingFileHandler(log_file, maxBytes=one_mb,
-    backupCount=10)
+                                                   backupCount=10)
 
     fmt = logging.Formatter(
             '%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
@@ -154,11 +161,14 @@ def setup_logging(log_file, log_level):
     StreamToLogger.setup_stdout()
     StreamToLogger.setup_stderr()
 
+
 ################################################################################
 """
 Helper functions
 """
 ################################################################################
+
+
 def read_yaml_as_dict(file_path: Union[Path, str]) -> dict:
     """Opens a yaml file and returns the content as a dict type."""
 
@@ -173,11 +183,13 @@ def read_yaml_as_dict(file_path: Union[Path, str]) -> dict:
 
     return dict_
 
+
 ################################################################################
 """
 Classes
 """
 ################################################################################
+
 
 class Machine:
 
@@ -208,12 +220,13 @@ class Machine:
 ################################################################################
 ################################################################################
 
+
 class SinglePointExtractor:
     """Documentation!"""
 
     minimum_required = ('surface', 'urban', 'dominant_river_tracing',
-    'optical_properties', 'fire', 'clm', 'fates', 'GSWP3', 'topography',
-    'lightning', 'aerosol_deposition')
+                        'optical_properties', 'fire', 'clm', 'fates', 'GSWP3', 'topography',
+                        'lightning', 'aerosol_deposition')
 
     scrip_file_path = None
     domain_file_path = None
@@ -242,22 +255,23 @@ class SinglePointExtractor:
 
         # LOCAL OUTPUT DIR
         self.output_dir = \
-        (Path(self.instruction_dict['output']['local_output']) / \
-        f"{self.site_code}_{self.version}").expanduser()
+            (Path(self.instruction_dict['output']['local_output'])
+             / f"{self.site_code}_{self.version}").expanduser()
         if not self.output_dir.is_dir():
             self.make_dir(self.output_dir)
 
         # TAR DIR
         self.tar_output_dir = \
-        (Path(self.instruction_dict['output']['tar_output_dir']) / \
-        f"{self.site_code}_{self.version}").expanduser()
+            (Path(self.instruction_dict['output']['tar_output_dir'])
+             / f"{self.site_code}_{self.version}").expanduser()
         if not self.tar_output_dir.is_dir():
             self.make_dir(self.tar_output_dir)
 
         # CTSM dir for mapping files
         self.ctsm_path = Path(self.instruction_dict['ctsm_path']).expanduser()
         self.root_path = \
-        Path(self.instruction_dict['nc_input_paths']['root_path']).expanduser()
+            Path(self.instruction_dict['nc_input_paths']
+                 ['root_path']).expanduser()
 
         # Run some input checks
         if not self.ceck_minimum_required(instruction_dict):
@@ -276,8 +290,8 @@ class SinglePointExtractor:
             path.mkdir(parents=True, exist_ok=False)
             print(f"Created directory '{path}'.")
         except:
-            print(f"Error when creating '{path}'. Make sure all parent " \
-            + "directories exist and there is no folder with the same name!")
+            print(f"Error when creating '{path}'. Make sure all parent "
+                  + "directories exist and there is no folder with the same name!")
             raise
         return True
 
@@ -308,17 +322,18 @@ class SinglePointExtractor:
         for key, val in dict_.items():
             if not val['create_new']:
                 if val['path'] is None:
-                    raise ValueError("You must provide a path if 'create_new' is 'no'!")
+                    raise ValueError(
+                            "You must provide a path if 'create_new' is 'no'!")
 
         if not dict_['SCRIP']['create_new']:
             self.scrip_file_path = \
-            Path(dict_['SCRIP']['path']).expanduser()
+                Path(dict_['SCRIP']['path']).expanduser()
         if not dict_['domain']['create_new']:
             self.domain_file_path = \
-            Path(dict_['domain']['path']).expanduser()
+                Path(dict_['domain']['path']).expanduser()
         if not dict_['mapping']['create_new']:
             self.mapping_file_path = \
-            Path(dict_['mapping']['path']).expanduser()
+                Path(dict_['mapping']['path']).expanduser()
 
         return True
 
@@ -330,7 +345,7 @@ class SinglePointExtractor:
 
         print(f'\nEXECUTING\n{cmd}\n')
         proc = subprocess.run(cmd, env=env, shell=True, check=True,
-        capture_output=True)
+                              capture_output=True)
         print(proc.stderr)
         print(proc.stdout)
         print('DONE!\n')
@@ -345,7 +360,7 @@ class SinglePointExtractor:
 
         cmd = "ncl "
         cmd += " ".join([f"""'{key}="{val}"'""" if isinstance(val, str)
-        else f"{key}={val}" for key, val in kwargs.items()])
+                         else f"{key}={val}" for key, val in kwargs.items()])
         cmd += f" {ncl_file_path};"
 
         return cmd
@@ -406,16 +421,16 @@ class SinglePointExtractor:
 
         ### Call perl script to make script files
         script_path_str = \
-        str(self.ctsm_path / 'ctsm/tools/mkmapdata/mknoocnmap.pl')
+            str(self.ctsm_path / 'ctsm/tools/mkmapdata/mknoocnmap.pl')
 
         cmd = script_path_str \
-        + f" -centerpoint {self.lat},{self.lon} -name {self.site_code} " \
-        + "-dx 0.01 -dy 0.01;"
+            + f" -centerpoint {self.lat},{self.lon} -name {self.site_code} " \
+            + "-dx 0.01 -dy 0.01;"
         subprocess.run(cmd, shell=True, check=True)
 
         ### Move new files to created script directory
         cmd = f"mv {script_path_str}/tools/mkmapgrids/*{self.site_code}*.nc " \
-        + f"{output_path}"
+            + f"{output_path}"
 
         # RUN
         self.run_process(cmd)
@@ -437,22 +452,22 @@ class SinglePointExtractor:
 
         ### Call scripts to make domain files
         domain_scripts_path_str = \
-        str(self.ctsm_path / '/cime/tools/mapping/gen_domain_files/')
+            str(self.ctsm_path / '/cime/tools/mapping/gen_domain_files/')
 
         cmd = domain_scripts_path_str + f"/src/.env_mach_specific.sh;" \
-        + f"{domain_scripts_path_str}/gen_domain -m "\
-        + f"{self.output_dir}/share/scripgrids/{self.site_code}/"\
-        + f"map_{self.site_code}_noocean_to_{self.site_code}_nomask" \
-        + f"_aave_da_{self.date}.nc -o ${self.site_code} -l ${self.site_code}"
+            + f"{domain_scripts_path_str}/gen_domain -m "\
+            + f"{self.output_dir}/share/scripgrids/{self.site_code}/"\
+            + f"map_{self.site_code}_noocean_to_{self.site_code}_nomask" \
+            + f"_aave_da_{self.date}.nc -o ${self.site_code} -l ${self.site_code}"
 
         # RUN
         self.run_process(cmd)
 
         ### Move new files to created script directory
         cmd = f"mv {domain_scripts_path_str}/domain.lnd.{self.site_code}_{self.site_code}.{self.date}.nc " \
-        + f"domain.lnd.{self.site_code}.{self.date}.nc;" \
-        + f"mv {domain_scripts_path_str}/domain*{self.site_code}*.nc " \
-        + f"{output_path};"
+            + f"domain.lnd.{self.site_code}.{self.date}.nc;" \
+            + f"mv {domain_scripts_path_str}/domain*{self.site_code}*.nc " \
+            + f"{output_path};"
         # RUN
         self.run_process(cmd)
 
@@ -462,20 +477,20 @@ class SinglePointExtractor:
 
     def _create_mapping(self):
         """TODO: Fix whatever this is:"""
-        ##### Modify regridbatch.sh. This has been done in "fates_emerald_api".
+        # Modify regridbatch.sh. This has been done in "fates_emerald_api".
 
         # Create folder
         output_path = self.output_dir / 'lnd' / 'clm2' / 'mappingdata' / \
-        'maps' / self.site_code
+            'maps' / self.site_code
         self.make_dir(output_path)
 
         ### Call scripts to make mapping files
         map_scripts_path_string = str(self.ctsm_path / '/tools/mkmapdata')
 
         cmd = f"{map_scripts_path_string}/regridbatch.sh 1x1_{self.site_code} "\
-        + f"{self.output_dir}/share/scripgrids/{self.output_dir}/SCRIPgrid_{self.output_dir}_nomask_c{self.date}.nc;" \
-        + f"mv {map_scripts_path_string}/map*{self.output_dir}*.nc " \
-        + f"{output_path};"
+            + f"{self.output_dir}/share/scripgrids/{self.output_dir}/SCRIPgrid_{self.output_dir}_nomask_c{self.date}.nc;" \
+            + f"mv {map_scripts_path_string}/map*{self.output_dir}*.nc " \
+            + f"{output_path};"
 
         # RUN
         self.run_process(cmd)
@@ -487,7 +502,7 @@ class SinglePointExtractor:
 
     def _create_surface(self):
         """TODO: Fix whatever this is"""
-        #### Compile (Only need to be run at the first time, better to run separately)
+        # Compile (Only need to be run the first time, better to run separately)
         #module load netCDF-Fortran/4.5.2-iimpi-2019b
         #Modify Makefile.common. This has been done in "fates_emerald_api".
         #gmake clean
@@ -498,7 +513,8 @@ class SinglePointExtractor:
         self.make_dir(output_path)
 
         ### Call scripts to make mapping files
-        surface_scripts_path_string = str(self.ctsm_path / '/tools/mksurfdata_map')
+        surface_scripts_path_string = str(
+                self.ctsm_path / '/tools/mksurfdata_map')
         cmd = f'''{surface_scripts_path_string}/mksurfdata.pl -no-crop -res usrspec -usr_gname 1x1_{self.site_code} -usr_gdate {self.date} -usr_mapdir {self.output_dir}/lnd/clm2/mappingdata/maps/{self.site_code} -dinlc {self.root_path} -hirespft -years "2005" -allownofile;'''
         + f'''mv surfdata*{self.site_code}* {output_path}'''
 
@@ -529,7 +545,7 @@ class SinglePointExtractor:
         # Paths from dict
         root_str = str(self.root_path)
         nc_in_str = \
-        self.instruction_dict['nc_input_paths']['land']['urban']
+            self.instruction_dict['nc_input_paths']['land']['urban']
 
         out_path = self.output_dir/'lnd'/'clm2'/'urbandata'
         if not out_path.is_dir():
@@ -541,11 +557,11 @@ class SinglePointExtractor:
         cmd += self.machine.generate_load_module_str('ncl')
 
         cmd += self.get_run_ncl_string(
-        ncl_file_path=f"{ncl_script_dir}/{script_name}",
-        plot_name=str(self.site_code),
-        nc_in_file_path=f"{root_str}/{nc_in_str}",
-        out_file_path=f"{out_str}/", # IMPORTANT TO ADD TRAILING SLASH!
-        domain_file_path=str(self.domain_file_path)
+            ncl_file_path=f"{ncl_script_dir}/{script_name}",
+            plot_name=str(self.site_code),
+            nc_in_file_path=f"{root_str}/{nc_in_str}",
+            out_file_path=f"{out_str}/",  # IMPORTANT TO ADD TRAILING SLASH!
+            domain_file_path=str(self.domain_file_path)
         )
         cmd += self.machine.get_purge_str()
 
@@ -555,7 +571,7 @@ class SinglePointExtractor:
         # Add to list, manually edited to match ncl script behavior
         nc_str_no_suffix = nc_in_str.replace('.nc', '')
         self._add_file_path_to_list(
-        PurePosixPath(out_str+nc_str_no_suffix+"_"+self.site_code+".nc")
+            PurePosixPath(out_str+nc_str_no_suffix+"_"+self.site_code+".nc")
         )
 
         return True
@@ -573,7 +589,7 @@ class SinglePointExtractor:
         out_str = str(out_path)
 
         param_dict = \
-        self.instruction_dict['nc_input_paths']['land']['parameter_files']
+            self.instruction_dict['nc_input_paths']['land']['parameter_files']
 
         for nc_in_str in param_dict.values():
             if nc_in_str is not None:
@@ -601,7 +617,7 @@ class SinglePointExtractor:
         # Paths from dict
         root_str = str(self.root_path)
         nc_in_str = \
-        self.instruction_dict['nc_input_paths']['land']['fire']
+            self.instruction_dict['nc_input_paths']['land']['fire']
 
         out_path = self.output_dir/'lnd'/'clm2'/'firedata'
         if not out_path.is_dir():
@@ -613,11 +629,11 @@ class SinglePointExtractor:
         cmd += self.machine.generate_load_module_str('ncl')
 
         cmd += self.get_run_ncl_string(
-        ncl_file_path=f"{ncl_script_dir}/{script_name}",
-        plot_name=str(self.site_code),
-        nc_in_file_path=f"{root_str}/{nc_in_str}",
-        out_file_path=f"{out_str}/", # IMPORTANT TO ADD TRAILING SLASH!
-        domain_file_path=str(self.domain_file_path)
+            ncl_file_path=f"{ncl_script_dir}/{script_name}",
+            plot_name=str(self.site_code),
+            nc_in_file_path=f"{root_str}/{nc_in_str}",
+            out_file_path=f"{out_str}/",  # IMPORTANT TO ADD TRAILING SLASH!
+            domain_file_path=str(self.domain_file_path)
         )
         cmd += self.machine.get_purge_str()
 
@@ -627,7 +643,7 @@ class SinglePointExtractor:
         # Add to list, manually edited to match ncl script behavior
         nc_str_no_suffix = nc_in_str.replace('.nc', '')
         self._add_file_path_to_list(
-        PurePosixPath(out_str+nc_str_no_suffix+"_"+self.site_code+".nc")
+            PurePosixPath(out_str+nc_str_no_suffix+"_"+self.site_code+".nc")
         )
 
         return True
@@ -658,11 +674,11 @@ class SinglePointExtractor:
         cmd += self.machine.generate_load_module_str('ncl')
 
         cmd += self.get_run_ncl_string(
-        ncl_file_path=f"{ncl_script_dir}/{script_name}",
-        plot_name=str(self.site_code),
-        nc_in_file_path=f"{root_str}/{nc_in_str}",
-        out_file_path=f"{out_str}/", # IMPORTANT TO ADD TRAILING SLASH!
-        domain_file_path=str(self.domain_file_path)
+            ncl_file_path=f"{ncl_script_dir}/{script_name}",
+            plot_name=str(self.site_code),
+            nc_in_file_path=f"{root_str}/{nc_in_str}",
+            out_file_path=f"{out_str}/",  # IMPORTANT TO ADD TRAILING SLASH!
+            domain_file_path=str(self.domain_file_path)
         )
         cmd += self.machine.get_purge_str()
 
@@ -672,7 +688,7 @@ class SinglePointExtractor:
         # Add to list, manually edited to match ncl script behavior
         nc_str_no_suffix = nc_in_str.replace('.nc', '')
         self._add_file_path_to_list(
-        PurePosixPath(out_str+nc_str_no_suffix+"_"+self.site_code+".nc")
+            PurePosixPath(out_str+nc_str_no_suffix+"_"+self.site_code+".nc")
         )
 
         return True
@@ -689,7 +705,7 @@ class SinglePointExtractor:
         # Paths from dict
         root_str = str(self.root_path)
         nc_in_str = \
-        self.instruction_dict['nc_input_paths']['atmosphere']['lightning']
+            self.instruction_dict['nc_input_paths']['atmosphere']['lightning']
 
         out_path = self.output_dir/'atm'/'datm7'/'NASA_LIS'
         if not out_path.is_dir():
@@ -701,11 +717,11 @@ class SinglePointExtractor:
         cmd += self.machine.generate_load_module_str('ncl')
 
         cmd += self.get_run_ncl_string(
-        ncl_file_path=f"{ncl_script_dir}/{script_name}",
-        plot_name=str(self.site_code),
-        nc_in_file_path=f"{root_str}/{nc_in_str}",
-        out_file_path=f"{out_str}/", # IMPORTANT TO ADD TRAILING SLASH!
-        domain_file_path=str(self.domain_file_path)
+            ncl_file_path=f"{ncl_script_dir}/{script_name}",
+            plot_name=str(self.site_code),
+            nc_in_file_path=f"{root_str}/{nc_in_str}",
+            out_file_path=f"{out_str}/",  # IMPORTANT TO ADD TRAILING SLASH!
+            domain_file_path=str(self.domain_file_path)
         )
         cmd += self.machine.get_purge_str()
 
@@ -715,7 +731,7 @@ class SinglePointExtractor:
         # Add to list, manually edited to match ncl script behavior
         nc_str_no_suffix = nc_in_str.replace('.nc', '')
         self._add_file_path_to_list(
-        PurePosixPath(out_str+nc_str_no_suffix+"_"+self.site_code+".nc")
+            PurePosixPath(out_str+nc_str_no_suffix+"_"+self.site_code+".nc")
         )
 
         return True
@@ -732,7 +748,7 @@ class SinglePointExtractor:
         # Paths from dict
         root_str = str(self.root_path)
         nc_in_str = \
-        self.instruction_dict['nc_input_paths']['atmosphere']['topography']
+            self.instruction_dict['nc_input_paths']['atmosphere']['topography']
 
         out_path = self.output_dir/'atm'/'datm7'/'topo_forcing'
         if not out_path.is_dir():
@@ -748,7 +764,7 @@ class SinglePointExtractor:
             plot_name=str(self.site_code),
             plot_height=self.elevation,
             nc_in_file_path=f"{root_str}/{nc_in_str}",
-            out_file_path=f"{out_str}/", # IMPORTANT TO ADD TRAILING SLASH!
+            out_file_path=f"{out_str}/",  # IMPORTANT TO ADD TRAILING SLASH!
             domain_file_path=str(self.domain_file_path)
         )
         cmd += self.machine.get_purge_str()
@@ -759,13 +775,14 @@ class SinglePointExtractor:
         # Add to list, manually edited to match ncl script behavior
         nc_str_no_suffix = nc_in_str.replace('.nc', '')
         self._add_file_path_to_list(
-        PurePosixPath(out_str+nc_str_no_suffix+"_"+self.site_code+".nc")
+            PurePosixPath(out_str+nc_str_no_suffix+"_"+self.site_code+".nc")
         )
 
         return True
 
 
 ################################################################################
+
 
     def tar_output(self):
         """Compress the files in the specified output dir into a Tarball"""
@@ -776,7 +793,7 @@ class SinglePointExtractor:
         print("Starting to compress the files...")
 
         cmd = ""
-        for file_path in created_files_path_list:
+        for file_path in self.created_files_path_list:
             cur_path = tar_dir_path / file_path.parent / self.site_code
             self.make_dir(cur_path)
             cmd += f"cp {self.output_dir}/{file_path} {cur_path}/;"
@@ -791,10 +808,10 @@ class SinglePointExtractor:
 
         return True
 
+
 ################################################################################
 """End class"""
 ################################################################################
-
 
 
 ################################################################################
@@ -805,6 +822,7 @@ Main function
 ################################################################################
 ################################################################################
 
+
 def main():
     args = get_parser().parse_args()
 
@@ -813,7 +831,7 @@ def main():
 
     work_dir = Path(__file__).parent
     log_file = work_dir / f'{today_string}.log'
-    log_level =  logging.DEBUG
+    log_level = logging.DEBUG
     setup_logging(log_file, log_level)
     log = logging.getLogger(__name__)
 
@@ -828,18 +846,19 @@ def main():
         yaml_path = Path(args.yaml_dir)
 
         if not yaml_path.is_dir():
-            print(f"Provided path '{yaml_dir}' does not exist!")
+            print(f"Provided path '{yaml_path}' does not exist!")
             sys.exit()
 
         # Grab all files ending with .yaml or .yml
         yaml_files = \
-        glob.glob(str(yaml_path)+"/*.yml") + glob.glob(str(yaml_path)+"/*.yaml")
+            glob.glob(str(yaml_path)+"/*.yml") + \
+            glob.glob(str(yaml_path)+"/*.yaml")
 
         for file in yaml_files:
             recipe_dict_list.append(read_yaml_as_dict(file))
 
         if not recipe_dict_list:
-            print(f"No yaml files found in '{yaml_dir}'!")
+            print(f"No yaml files found in '{yaml_path}'!")
             sys.exit()
 
     # Single file provided via -f?
@@ -853,15 +872,15 @@ def main():
 
     # Neither -d nor -f provided?
     else:
-        print("You need to provide at least one argument. Run "\
-        + "'python3 create_forcing_classic.py --help' for details.")
+        print("You need to provide at least one argument. Run "
+              + "'python3 create_forcing_classic.py --help' for details.")
         sys.exit()
 
     ###################### START CREATING INPUT DATA ###########################
     for site_dict in recipe_dict_list:
 
         extractor = SinglePointExtractor(instruction_dict=site_dict,
-        machine=machine)
+                                         machine=machine)
 
         #extractor.create_share_forcing()
         #extractor.create_land_forcing()
@@ -893,6 +912,7 @@ def main():
             extractor._add_parameter_files()
 
         #extractor.tar_output()
+
 
 if __name__ == "__main__":
     main()
