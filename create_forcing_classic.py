@@ -909,6 +909,10 @@ def main():
         if user_in.lower() == "y":
             extractor._create_scrip()
 
+        user_in = input("Create domain? [y/n]: ")
+        if user_in.lower() == "y":
+            extractor._create_domain()
+
         user_in = input("Create aero dep? [y/n]: ")
         if user_in.lower() == "y":
             extractor._create_atm_aerosol()
