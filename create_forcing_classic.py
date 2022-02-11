@@ -435,7 +435,7 @@ class SinglePointExtractor:
             + f" -centerpoint {self.lat},{self.lon} -name {self.site_code} " \
             + "-dx 0.01 -dy 0.01;"
         # Copy output file
-        cmd += f"mv {self.ctsm_path}/tools/mkmapgrids/*{self.site_code}*.nc "\
+        cmd += f"mv {self.code_dir}/*{self.site_code}*.nc "\
             + f"{output_path}/;"  # Trailing "/" important!
         cmd += self.machine.get_purge_str()
 
