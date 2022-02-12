@@ -241,7 +241,6 @@ class SinglePointExtractor:
         self.date = date.today().strftime("%Y-%m-%d")
         self.ctsm_date = date.today().strftime("%y%m%d")
 
-        self.site_name = self.instruction_dict['site_name']
         self.site_code = self.instruction_dict['site_code']
         self.lat = self.instruction_dict['coordinates']['lat']
         self.lon = self.instruction_dict['coordinates']['lon']

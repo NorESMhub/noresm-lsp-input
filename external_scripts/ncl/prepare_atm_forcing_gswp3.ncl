@@ -63,8 +63,6 @@ begin
    xceil =plot_lon+0.005
    yfloor=plot_lat-0.005
    yceil =plot_lat+0.005
-   print(yceil)
-   print(xceil)
 
    do year=year_start,year_end,1
       do m=0,11,1
@@ -93,8 +91,6 @@ begin
 
          loni=ind_nearest_coord(plot_lon, lon, 0)
          latj=ind_nearest_coord(plot_lat, lat, 0)
-         print(loni)
-         print(latj)
 
 ;########## Creat forcing in netcdf format
 
@@ -152,7 +148,6 @@ begin
 
          setfileoption(fclim,"DefineMode",False)
 
-         print(time)
          fclim->time   = (/time/)        ; "(/", "/)" syntax tells NCL to only output the data values to the predefined locations on the file.
          fclim->EDGEW  = (/xfloor/)
          fclim->EDGEE  = (/xceil/)
@@ -179,4 +174,5 @@ begin
 
       end do
    end do
+   print ( "Finished creating climate forcing files for: "+plot_name )
 end

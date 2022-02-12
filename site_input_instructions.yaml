@@ -1,19 +1,15 @@
 ---
-site_name: SeedClim_ALP4 # Long name, added to meta data
 site_code: ALP4 # Site code, determines naming of the output dirs/files
 version: 2.1.0 # OBS! Sites with the same version must use the same .nc files
 coordinates: # Geographic coordinates, decimal (WGS84)
   lat: 60.9335
   lon: 6.41504
 elevation: 1088 # m above sea level [m.a.s.l.]
-meta_info:
-  doc_url: https://www.mn.uio.no/geo/english/research/groups/latice/
-  meta_url: https://www.mn.uio.no/geo/english/research/groups/latice/
 # The scripts requires a custom CTSM version (run install_dependencies.sh first)
 ctsm_path: ~/ctsm/
 # The final tar-ball will end up here:
 output:
-  local_output: ~/inputdata_fates_platform/testing/
+  local_output: ~/inputdata_fates_platform/
   tar_output_dir: /cluster/shared/noresm/inputdata_fates_platform/
 nc_input_paths:
   # Use a root path that ALL (!) other given paths will be relative to
