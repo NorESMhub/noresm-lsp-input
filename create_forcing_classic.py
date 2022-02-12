@@ -738,7 +738,7 @@ class SinglePointExtractor:
 
         # Call scripts to create topography data
         ncl_script_dir = self.ncl_script_dir
-        script_name = "prepare_atm_forcing.ncl"
+        script_name = "prepare_atm_forcing_gswp3.ncl"
 
         climate_dict = \
             self.instruction_dict['nc_input_paths']['atmosphere']['climate']
