@@ -938,27 +938,28 @@ class SinglePointExtractor:
 
 ###############################################################################
 
+
     def tar_output(self):
         """Compress the files in the specified output dir into a Tarball"""
 
-        # Paths
-        tar_dir_path = self.tar_output_dir / 'inputdata'
-        self.make_dir(tar_dir_path)
-
         print("Starting to compress the files...")
 
-        # Recursively copy local output folder
-        cmd = f"cd {self.output_dir};"
-        cmd += f"cp -R . {tar_dir_path};"
+        # Add temporary dir to adhere to previous versions
+        self.make_dir(self.output_dir / 'inputdata')
 
-        # n_leading_components = len(self.tar_output_dir.parts)
         # Tar folder
         tar_dir_name = f"inputdata_version{self.version}_{self.site_code}.tar"
 
-        cmd += f"cd {self.tar_output_dir};"
-        cmd += f"tar -cvf {tar_dir_name} -C {self.tar_output_dir} inputdata;"
-        # cmd += f"rm -r {tar_dir_path};"
-        cmd += f"cd {self.code_dir}"
+        # Tar output, BUT OMIT LARGE SCRIP AND MAPPING FILES!
+        cmd = f"cd {self.output_dir};"
+        cmd += "rsync -av --progress . ./inputdata --exclude share/scripgrids "\
+            + "--exclude lnd/clm2/mappingdata --exclude inputdata  " \
+            + "--exclude *.log --exclude *.namelist --exclude *.ocn.*;"
+        cmd += f"tar -cvf {tar_dir_name} inputdata;"
+        cmd += f"mv {tar_dir_name} {self.tar_output_dir};"
+        cmd += "rm -r inputdata;"
+
+        cmd += f"cd {self.code_dir};"
         self.run_process(cmd)
 
         return True
@@ -1042,7 +1043,7 @@ def main():
 
         extractor.create_share_forcing()
         extractor.create_land_forcing()
-        extractor.create_atmosphere_forcing()
+        extractor.create_atm_forcing()
 
         print("Finished creating inputs. The created files/dirs are:")
         _ = [print(f"- {f}") for f in extractor.created_files_path_list]

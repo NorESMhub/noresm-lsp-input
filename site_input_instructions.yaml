@@ -10,7 +10,7 @@ ctsm_path: ~/ctsm/
 # The final tar-ball will end up here:
 output:
   local_output: ~/inputdata_fates_platform/
-  tar_output_dir: ~/inputdata_fates_platform/tar/ # /cluster/shared/noresm/inputdata_fates_platform/
+  tar_output_dir: /cluster/shared/noresm/inputdata_fates_platform/nlp-input-handling/ # /cluster/shared/noresm/inputdata_fates_platform/
 nc_input_paths:
   # Use a root path that ALL (!) other given paths will be relative to
   root_path: /cluster/shared/noresm/inputdata/
