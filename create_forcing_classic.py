@@ -136,6 +136,7 @@ def setup_logging(log_file, log_level):
     Setup logging to log to console and log file.
     """
 
+    logging.raiseExceptions = True
     root_logger = logging.getLogger()
     root_logger.setLevel(log_level)
 
@@ -379,19 +380,22 @@ class SinglePointExtractor:
     def create_share_forcing(self):
         """Run functions to create shared forcing files"""
 
+        print("Start creating shared forcing...")
         share_dict = self.instruction_dict['nc_input_paths']['share']
         if share_dict['SCRIP']['create_new']:
             print("Creating new SCRIP file...")
-            self._create_scrip(share_dict)
-            self._create_mapping(share_dict)
+            self._create_scrip()
+            self._create_mapping()
         if share_dict['domain']['create_new']:
             print("Creating new domain file...")
-            self._create_domain(share_dict)
+            self._create_domain()
 
     ###########################################################################
 
     def create_land_forcing(self):
         """Run functions to create land forcing files"""
+
+        print("Start creating land forcing...")
 
         self._create_surface()
         self._create_urban()
@@ -403,6 +407,8 @@ class SinglePointExtractor:
 
     def create_atm_forcing(self):
         """Run functions to create atmospheric forcing files"""
+
+        print("Start creating atmospheric forcing...")
 
         self._create_climate()
         self._create_topography()
@@ -931,7 +937,6 @@ class SinglePointExtractor:
 
 
 ###############################################################################
-
 
     def tar_output(self):
         """Compress the files in the specified output dir into a Tarball"""
