@@ -38,7 +38,7 @@ import yaml
 from datetime import date
 from argparse import ArgumentParser
 from argparse import RawTextHelpFormatter
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 from typing import Union
 
 ###############################################################################
@@ -204,7 +204,8 @@ class Machine:
         return(dict_['machines'][machine_name])
 
     def generate_load_module_str(self, module_type: str):
-        return f"module load {self.property_dict['module_names'][module_type]};"
+        return "module load " \
+            + f"{self.property_dict['module_names'][module_type]};"
 
     @classmethod
     def get_purge_str(cls):
@@ -223,14 +224,14 @@ class Machine:
 class SinglePointExtractor:
     """Documentation!"""
 
-    minimum_required = ('surface', 'urban', 'dominant_river_tracing',
-                        'optical_properties', 'fire', 'clm', 'fates', 'GSWP3',
-                        'topography', 'lightning', 'aerosol_deposition')
+    minimum_required = ('surface', 'urban', 'aging_parameters',
+                        'optical_properties', 'fire', 'clm', 'fates',
+                        'topography', 'lightning', 'aerosol_deposition',
+                        'root_path')
 
     scrip_map_file_path = None
     scrip_grid_file_path = None
     domain_file_path = None
-    mapping_file_path = None
 
     def __init__(self, instruction_dict: dict, machine: Machine):
 
@@ -290,8 +291,8 @@ class SinglePointExtractor:
             path.mkdir(parents=True, exist_ok=False)
             print(f"Created directory '{path}'.")
         except:
-            print(f"Error when creating '{path}'. Make it is valid and "
-                  + "that there is no folder with the same name!")
+            print(f"Error when creating '{path}'. Make sure it is valid and "
+                  + "that there is no existing folder with the same name!")
             raise
         return True
 
@@ -333,9 +334,6 @@ class SinglePointExtractor:
         if not dict_['domain']['create_new']:
             self.domain_file_path = \
                 Path(dict_['domain']['path']).expanduser()
-        if not dict_['mapping']['create_new']:
-            self.mapping_file_path = \
-                Path(dict_['mapping']['path']).expanduser()
 
         return True
 
@@ -384,37 +382,32 @@ class SinglePointExtractor:
         share_dict = self.instruction_dict['nc_input_paths']['share']
         if share_dict['SCRIP']['create_new']:
             print("Creating new SCRIP file...")
-            self._create_scrip(share_dict),
+            self._create_scrip(share_dict)
+            self._create_mapping(share_dict)
         if share_dict['domain']['create_new']:
             print("Creating new domain file...")
             self._create_domain(share_dict)
-        if share_dict['mapping']['create_new']:
-            print("Creating new mapping file...")
-            self._create_mapping(share_dict)
 
     ###########################################################################
 
     def create_land_forcing(self):
         """Run functions to create land forcing files"""
 
-        land_dict = self.instruction_dict['nc_input_paths']['land']
-
-        if land_dict['urban']:
-            self._create_urban()
-        if land_dict['parameter_files']['clm']:
-            self._create_clm_param()
-        if land_dict['parameter_files']['fates']:
-            self._create_fates_param()
+        self._create_surface()
+        self._create_urban()
+        self._add_snow_files()
+        self._create_fire()
+        self._add_parameter_files()
 
     ###########################################################################
 
     def create_atm_forcing(self):
         """Run functions to create atmospheric forcing files"""
 
-        atm_dict = self.instruction_dict['nc_input_paths']['atmosphere']
-
-        if atm_dict['aerosol_deposition']:
-            self._create_atm_aerosol()
+        self._create_climate()
+        self._create_topography()
+        self._create_atm_lightning()
+        self._create_atm_aerosol()
 
     ###########################################################################
     ###########################################################################
@@ -605,9 +598,35 @@ class SinglePointExtractor:
     ###########################################################################
     ###########################################################################
 
-    def _create_land_aerosol(self):
-        """TODO: Fix whatever this is"""
-        pass
+    def _add_snow_files(self):
+        """Copy SNICAR aerosol .nc files into the land component forcing"""
+
+        # Paths from yaml
+        root_str = str(self.root_path)
+
+        out_path = self.output_dir / 'lnd' / 'clm2' / 'snicardata'
+        if not out_path.is_dir():
+            self.make_dir(out_path)
+        out_str = str(out_path)
+
+        snicar_nc_paths = \
+            self.instruction_dict['nc_input_paths']['land']['snow']
+
+        cmd = ""
+        for nc_in_str in snicar_nc_paths.values():
+            if nc_in_str is not None:
+                cmd += f"cp {root_str}/{nc_in_str} {out_str}/;"
+                # Add to list
+                nc_file_name = Path(nc_in_str).name
+                self._add_file_path_to_list(
+                    Path(out_path / nc_file_name)
+                )
+
+        # RUN
+        if cmd:
+            self.run_process(cmd)
+
+        return True
 
     ###########################################################################
 
@@ -647,7 +666,7 @@ class SinglePointExtractor:
         # Add to list, manually edited to match ncl script behavior
         nc_str_no_suffix = nc_in_str.replace('.nc', '')
         self._add_file_path_to_list(
-            PurePosixPath(out_str+nc_str_no_suffix+"_"+self.site_code+".nc")
+            Path(out_str+nc_str_no_suffix+"_"+self.site_code+".nc")
         )
 
         return True
@@ -659,7 +678,7 @@ class SinglePointExtractor:
         # Paths from yaml
         root_str = str(self.root_path)
 
-        out_path = self.output_dir/'lnd'/'clm2'/'paramdata'
+        out_path = self.output_dir / 'lnd' / 'clm2' / 'paramdata'
         if not out_path.is_dir():
             self.make_dir(out_path)
         out_str = str(out_path)
@@ -676,7 +695,7 @@ class SinglePointExtractor:
                 # Add to list
                 nc_file_name = Path(nc_in_str).name
                 self._add_file_path_to_list(
-                    PurePosixPath(out_path / nc_file_name)
+                    Path(out_path / nc_file_name)
                 )
 
         return True
@@ -697,7 +716,7 @@ class SinglePointExtractor:
         nc_in_str = \
             self.instruction_dict['nc_input_paths']['land']['fire']
 
-        out_path = self.output_dir/'lnd'/'clm2'/'firedata'
+        out_path = self.output_dir / 'lnd' / 'clm2' / 'firedata'
         if not out_path.is_dir():
             self.make_dir(out_path)
         out_str = str(out_path)
@@ -721,14 +740,14 @@ class SinglePointExtractor:
         # Add to list, manually edited to match ncl script behavior
         nc_str_no_suffix = nc_in_str.replace('.nc', '')
         self._add_file_path_to_list(
-            PurePosixPath(out_str+nc_str_no_suffix+"_"+self.site_code+".nc")
+            Path(out_str+nc_str_no_suffix+"_"+self.site_code+".nc")
         )
 
         return True
 
     ###########################################################################
     ###########################################################################
-    '''Atmospheric forcing functions'''
+    '''Atmospheric forcing'''
     ###########################################################################
     ###########################################################################
 
@@ -791,7 +810,8 @@ class SinglePointExtractor:
 
         # Paths from yaml
         root_str = str(self.root_path)
-        nc_in_str = self.instruction_dict['nc_input_paths']['atmosphere']['aerosol_deposition']
+        nc_in_str = self \
+            .instruction_dict['nc_input_paths']['atmosphere']['aerosol_deposition']
         out_path = self.output_dir / 'atm' / 'cam' / 'chem' \
             / 'trop_mozart_aero' / 'aero'
         if not out_path.is_dir():
@@ -817,7 +837,7 @@ class SinglePointExtractor:
         # Add to list, manually edited to match ncl script behavior
         nc_str_no_suffix = nc_in_str.replace('.nc', '')
         self._add_file_path_to_list(
-            PurePosixPath(out_str+nc_str_no_suffix+"_"+self.site_code+".nc")
+            Path(out_str+nc_str_no_suffix+"_"+self.site_code+".nc")
         )
 
         return True
@@ -860,7 +880,7 @@ class SinglePointExtractor:
         # Add to list, manually edited to match ncl script behavior
         nc_str_no_suffix = nc_in_str.replace('.nc', '')
         self._add_file_path_to_list(
-            PurePosixPath(out_str+nc_str_no_suffix+"_"+self.site_code+".nc")
+            Path(out_str+nc_str_no_suffix+"_"+self.site_code+".nc")
         )
 
         return True
@@ -904,7 +924,7 @@ class SinglePointExtractor:
         # Add to list, manually edited to match ncl script behavior
         nc_str_no_suffix = nc_in_str.replace('.nc', '')
         self._add_file_path_to_list(
-            PurePosixPath(out_str+nc_str_no_suffix+"_"+self.site_code+".nc")
+            Path(out_str+nc_str_no_suffix+"_"+self.site_code+".nc")
         )
 
         return True
@@ -916,23 +936,24 @@ class SinglePointExtractor:
     def tar_output(self):
         """Compress the files in the specified output dir into a Tarball"""
 
+        # Paths
         tar_dir_path = self.tar_output_dir / 'inputdata'
         self.make_dir(tar_dir_path)
 
         print("Starting to compress the files...")
 
-        cmd = ""
-        for file_path in self.created_files_path_list:
-            cur_path = tar_dir_path / file_path.parent / self.site_code
-            self.make_dir(cur_path)
-            cmd += f"cp {self.output_dir}/{file_path} {cur_path}/;"
+        # Recursively copy local output folder
+        cmd = f"cd {self.output_dir};"
+        cmd += f"cp -R . {tar_dir_path};"
 
-        self.run_process(cmd)
-
+        # n_leading_components = len(self.tar_output_dir.parts)
         # Tar folder
         tar_dir_name = f"inputdata_version{self.version}_{self.site_code}.tar"
-        cmd = f"tar -cvf {tar_dir_name} inputdata;"
-        cmd += f"rm -r {tar_dir_path};"
+
+        cmd += f"cd {self.tar_output_dir};"
+        cmd += f"tar -cvf {tar_dir_name} -C {self.tar_output_dir} inputdata;"
+        # cmd += f"rm -r {tar_dir_path};"
+        cmd += f"cd {self.code_dir}"
         self.run_process(cmd)
 
         return True
@@ -1014,56 +1035,14 @@ def main():
         extractor = SinglePointExtractor(instruction_dict=site_dict,
                                          machine=machine)
 
-        # extractor.create_share_forcing()
-        # extractor.create_land_forcing()
-        # extractor.create_atmosphere_forcing()
+        extractor.create_share_forcing()
+        extractor.create_land_forcing()
+        extractor.create_atmosphere_forcing()
 
-        # extractor.tar_output()
+        print("Finished creating inputs. The created files/dirs are:")
+        _ = [print(f"- {f}") for f in extractor.created_files_path_list]
 
-        # FOR TESTING, EXECUTE EACH FUNCTION INDIVIDUALLY
-        user_in = input("Create scrip? [y/n]: ")
-        if user_in.lower() == "y":
-            extractor._create_scrip()
-
-        user_in = input("Create domain? [y/n]: ")
-        if user_in.lower() == "y":
-            extractor._create_domain()
-
-        user_in = input("Create mapping? [y/n]: ")
-        if user_in.lower() == "y":
-            extractor._create_mapping()
-
-        user_in = input("Create surface? [y/n]: ")
-        if user_in.lower() == "y":
-            extractor._create_surface()
-
-        user_in = input("Create climate? [y/n]: ")
-        if user_in.lower() == "y":
-            extractor._create_climate()
-
-        user_in = input("Create aero dep? [y/n]: ")
-        if user_in.lower() == "y":
-            extractor._create_atm_aerosol()
-
-        user_in = input("Create lightning? [y/n]: ")
-        if user_in.lower() == "y":
-            extractor._create_atm_lightning()
-
-        user_in = input("Create pop den? [y/n]: ")
-        if user_in.lower() == "y":
-            extractor._create_fire()
-
-        user_in = input("Create topo? [y/n]: ")
-        if user_in.lower() == "y":
-            extractor._create_topography()
-
-        user_in = input("Create urban? [y/n]: ")
-        if user_in.lower() == "y":
-            extractor._create_urban()
-
-        user_in = input("Create params? [y/n]: ")
-        if user_in.lower() == "y":
-            extractor._add_parameter_files()
+        extractor.tar_output()
 
 
 if __name__ == "__main__":

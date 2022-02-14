@@ -1,16 +1,16 @@
 ---
-site_code: ALP4 # Site code, determines naming of the output dirs/files
+site_code: ISK # Site code, determines naming of the output dirs/files
 version: 2.1.0 # OBS! Sites with the same version must use the same .nc files
 coordinates: # Geographic coordinates, decimal (WGS84)
-  lat: 60.9335
-  lon: 6.41504
-elevation: 1088 # m above sea level [m.a.s.l.]
+  lat: 69.3408715
+  lon: 25.29547425
+elevation: 360 # m above sea level [m.a.s.l.]
 # The scripts requires a custom CTSM version (run install_dependencies.sh first)
 ctsm_path: ~/ctsm/
 # The final tar-ball will end up here:
 output:
   local_output: ~/inputdata_fates_platform/
-  tar_output_dir: /cluster/shared/noresm/inputdata_fates_platform/
+  tar_output_dir: ~/inputdata_fates_platform/tar/ # /cluster/shared/noresm/inputdata_fates_platform/
 nc_input_paths:
   # Use a root path that ALL (!) other given paths will be relative to
   root_path: /cluster/shared/noresm/inputdata/
@@ -22,16 +22,13 @@ nc_input_paths:
       grid_path: ~/
     domain:
       create_new: yes  # yes or no
-      path: /cluster/shared/noresm/inputdata_fates_platform/share/domains/ALP4/domain.lnd.ALP4.200422.nc
-    mapping:
-      create_new: yes  # yes or no
       path: ~/
   # Land component
   land:
     surface: lnd/clm2/surfdata_map/release-clm5.0.18/surfdata_0.9x1.25_hist_16pfts_Irrig_CMIP6_simyr2000_c190214.nc
     urban: lnd/clm2/urbandata/CLM50_tbuildmax_Oleson_2016_0.9x1.25_simyr1849-2106_c160923.nc
-    aerosol:
-      dominant_river_tracing: lnd/clm2/snicardata/snicar_drdt_bst_fit_60_c070416.nc
+    snow:
+      aging_parameters: lnd/clm2/snicardata/snicar_drdt_bst_fit_60_c070416.nc
       optical_properties: lnd/clm2/snicardata/snicar_optics_5bnd_c090915.nc
     fire: lnd/clm2/firedata/clmforc.Li_2017_HYDEv3.2_CMIP6_hdm_0.5x0.5_AVHRR_simyr1850-2016_c180202.nc
     parameter_files:
