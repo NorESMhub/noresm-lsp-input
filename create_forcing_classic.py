@@ -38,6 +38,8 @@ import logging.handlers
 import subprocess
 import glob
 import yaml
+import string
+import random
 
 from datetime import date
 from argparse import ArgumentParser
@@ -270,7 +272,7 @@ class SinglePointExtractor:
             while(input_bool):
                 user_input_rmdir = \
                     input(f"Warning: {self.output_dir} already exists. "
-                        + "Enter 'a' to abort or 'd' to delete the existing folder: ")
+                          + "Enter 'a' to abort or 'd' to delete the existing folder: ")
                 if user_input_rmdir.lower() == "a":
                     input_bool = False
                     sys.exit()
@@ -292,7 +294,7 @@ class SinglePointExtractor:
             while(input_bool):
                 user_input_rmdir = \
                     input(f"Warning: {self.tar_output_dir} already exists. "
-                        + "Enter 'a' to abort or 'd' to delete the existing folder: ")
+                          + "Enter 'a' to abort or 'd' to delete the existing folder: ")
                 if user_input_rmdir.lower() == "a":
                     input_bool = False
                     sys.exit()
@@ -972,6 +974,7 @@ class SinglePointExtractor:
 
 ###############################################################################
 
+
     def tar_output(self):
         """Compress the files in the specified output dir into a Tarball"""
 
@@ -1020,7 +1023,10 @@ def main():
     today_string = today.strftime("%Y-%m-%d")
 
     work_dir = Path(__file__).parent
-    log_file = work_dir / f'{today_string}.log'
+    # Generate log file name, random ending to avoid access errors
+    rand_str = ''.join(random.choices(string.ascii_uppercase
+                                      + string.digits, k=6))
+    log_file = work_dir / f'{today_string}-{rand_str}.log'
     log_level = logging.DEBUG
     setup_logging(log_file, log_level)
     log = logging.getLogger(__name__)
