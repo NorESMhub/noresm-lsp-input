@@ -1,0 +1,46 @@
+---
+site_code: ALP1 # Site code, determines naming of the output dirs/files
+version: 1.0.0 # OBS! Sites with the same version must use the same .nc files
+coordinates: # Geographic coordinates, decimal (WGS84)
+  lat: 61.0243
+  lon: 8.12343
+elevation: 1208 # m above sea level [m.a.s.l.]
+# The scripts requires a custom CTSM version (run install_dependencies.sh first)
+ctsm_path: ~/ctsm/
+# The final tar-ball will end up here:
+output:
+  local_output: /cluster/shared/noresm/inputdata_fates_platform/v1.0.0/raw/
+  tar_output_dir: /cluster/shared/noresm/inputdata_fates_platform/v1.0.0/ # /cluster/shared/noresm/inputdata_fates_platform/
+nc_input_paths:
+  # Use a root path that ALL (!) other given paths will be relative to
+  root_path: /cluster/shared/noresm/inputdata/
+  # Shared by different components
+  share:
+    SCRIP:
+      create_new: yes  # yes or no
+      map_path: ~/
+      grid_path: ~/
+    domain:
+      create_new: yes  # yes or no
+      path: ~/
+  # Land component
+  land:
+    surface: lnd/clm2/surfdata_map/release-clm5.0.18/surfdata_0.9x1.25_hist_16pfts_Irrig_CMIP6_simyr2000_c190214.nc
+    urban: lnd/clm2/urbandata/CLM50_tbuildmax_Oleson_2016_0.9x1.25_simyr1849-2106_c160923.nc
+    snow:
+      aging_parameters: lnd/clm2/snicardata/snicar_drdt_bst_fit_60_c070416.nc
+      optical_properties: lnd/clm2/snicardata/snicar_optics_5bnd_c090915.nc
+    fire: lnd/clm2/firedata/clmforc.Li_2017_HYDEv3.2_CMIP6_hdm_0.5x0.5_AVHRR_simyr1850-2016_c180202.nc
+    parameter_files:
+      clm: lnd/clm2/paramdata/clm5_params.c200402.nc
+      fates: lnd/clm2/paramdata/fates_params_api.14.0.0_12pft_c200921.nc
+  # Atmospheric component
+  atmosphere:
+    climate:
+      GSWP3:
+        root_path: atm/datm7/atm_forcing.datm7.GSWP3.0.5d.v1.c170516
+        year_start: 1901
+        year_end: 2010
+    topography: atm/datm7/topo_forcing/topodata_0.9x1.25_USGS_070110_stream_c151201.nc
+    lightning: atm/datm7/NASA_LIS/clmforc.Li_2016_climo1995-2013.360x720.lnfm_Total_c160825.nc
+    aerosol_deposition: atm/cam/chem/trop_mozart_aero/aero/aerosoldep_WACCM.ensmean_monthly_hist_1849-2015_0.9x1.25_CMIP6_c180926.nc
