@@ -1,22 +1,26 @@
 #! /usr/bin/env python3
 """
 This module harmonizes the different steps necessary to create a CLM input data
-tarball used within the NorESM land sites platform setup. It extracts data from
-both global and regional datasets. Currently, it only supports single-site
-simulations. Broadly, it is a wrapper for executing tools from the CTSM and
-CIME libraries.
+tarball used within the NorESM land sites platform setup. It extracts single-point 
+forcing data from global and regional datasets. Broadly, it is a wrapper for 
+executing tools from the CTSM and CIME libraries.
 
-To run this script on SAGA:
+To run this script on SAGA run the following commands:
 
-git clone https://github.com/NordicESMhub/ctsm.git
-git checkout -b test-fates release-emerald-platform2.0.1
+# WARNING! Move existing copies of .cime and ctsm from your home directory (~) to be
+# on the safe side.
 
-module load Python/3.9.6-GCCcore-11.2.0
-module load NCL/6.6.2-intel-2019b
-module load netCDF-Fortran/4.5.2-iimpi-2019b
+# First time installation
+cd nlp-input-handling/install
+chmod +x ./install_dependencies.sh
+./install_dependencies.sh
+
+# Load dependencies, necessary each time you log in again
+cd ~/nlp-input-handling
+. ./load_dependencies.sh
 
 There are two ways to execute this script:
-./create_forcing_classic.py -f instruction.yaml
+./create_forcing_classic.py -f [instruction_file_name].yaml
 => For using a single yaml recipe file (see documentation)
 
 ./create_forcing_classic.py -d path/to/yaml/collection
@@ -58,7 +62,7 @@ def get_parser():
                         help="path to a single yaml file containing the input "
                         + "data extraction recipe.", action="store",
                         dest="yaml_file", required=False, type=str,
-                        default='site_input_instructions.yaml')
+                        default='site_instructions_template.yaml')
 
     parser.add_argument("-d", "--dir",
                         help="path to a directory containing yaml files with "
@@ -146,8 +150,8 @@ def setup_logging(log_file, log_level):
                                                    backupCount=10)
 
     fmt = logging.Formatter(
-            '%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-            datefmt='%y-%m-%d %H:%M:%S')
+        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+        datefmt='%y-%m-%d %H:%M:%S')
 
     handler.setFormatter(fmt)
     root_logger.addHandler(handler)
@@ -261,6 +265,21 @@ class SinglePointExtractor:
              / f"{self.site_code}_{self.version}").expanduser()
         if not self.output_dir.is_dir():
             self.make_dir(self.output_dir)
+        else:
+            input_bool = True
+            while(input_bool):
+                user_input_rmdir = \
+                    input(f"Warning: {self.output_dir} already exists. "
+                        + "Enter 'a' to abort or 'd' to delete the existing folder: ")
+                if user_input_rmdir.lower() == "a":
+                    input_bool = False
+                    sys.exit()
+                elif user_input_rmdir.lower() == "d":
+                    self.run_process(f"rm -rf {self.output_dir};")
+                    self.make_dir(self.output_dir)
+                    input_bool = False
+                else:
+                    pass
 
         # TAR DIR
         self.tar_output_dir = \
@@ -268,6 +287,21 @@ class SinglePointExtractor:
              / f"{self.site_code}_{self.version}").expanduser()
         if not self.tar_output_dir.is_dir():
             self.make_dir(self.tar_output_dir)
+        else:
+            input_bool = True
+            while(input_bool):
+                user_input_rmdir = \
+                    input(f"Warning: {self.tar_output_dir} already exists. "
+                        + "Enter 'a' to abort or 'd' to delete the existing folder: ")
+                if user_input_rmdir.lower() == "a":
+                    input_bool = False
+                    sys.exit()
+                elif user_input_rmdir.lower() == "d":
+                    self.run_process(f"rm -rf {self.tar_output_dir};")
+                    self.make_dir(self.tar_output_dir)
+                    input_bool = False
+                else:
+                    pass
 
         # CTSM dir for mapping files
         self.ctsm_path = Path(self.instruction_dict['ctsm_path']).expanduser()
@@ -325,7 +359,7 @@ class SinglePointExtractor:
             if not val['create_new']:
                 if val['path'] is None:
                     raise ValueError(
-                            "You must provide a path if 'create_new' is 'no'!")
+                        "You must provide a path if 'create_new' is 'no'!")
 
         if not dict_['SCRIP']['create_new']:
             self.scrip_map_file_path = \
@@ -937,7 +971,6 @@ class SinglePointExtractor:
 
 
 ###############################################################################
-
 
     def tar_output(self):
         """Compress the files in the specified output dir into a Tarball"""
