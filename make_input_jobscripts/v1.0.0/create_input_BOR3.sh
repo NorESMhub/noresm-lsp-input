@@ -3,6 +3,9 @@
 #SBATCH --time=10:00:00
 ## You can add more args for sbatch here in the same way as above (see "sbatch --help" for all the args), e.g.:
 #SBATCH --qos=normal
+#SBATCH --ntasks=1
+#SBATCH --mem-per-cpu=8G
+#SBATCH --cpus-per-task=4
 #SBATCH --job-name=BOR3_input
 
 ## Your commands here, e.g.:
