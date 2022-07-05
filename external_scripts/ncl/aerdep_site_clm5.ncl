@@ -56,7 +56,7 @@ begin
     exit
   end if
 
-  out_file_path = out_file_path+nc_in_file_name_no_suffix+"_"+plot_name+".nc"
+  out_file_path = out_file_path+nc_in_file_name_no_suffix+".nc"
 
   if (.not. isvar("domain_file_path")) then      ; is domain file path on command line?
     print("You must provide a domain file path via the command line! Example:")
