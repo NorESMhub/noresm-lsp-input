@@ -1019,6 +1019,8 @@ def main():
 
     args = get_parser().parse_args()
 
+    """
+    # DISABLE LOGGING FOR TESTING, SOMETIMES CREATES STACK OVERFLOW ERRORS
     today = date.today()
     today_string = today.strftime("%Y-%m-%d")
 
@@ -1030,6 +1032,7 @@ def main():
     log_level = logging.DEBUG
     setup_logging(log_file, log_level)
     log = logging.getLogger(__name__)
+    """
 
     # Instantiate machine class
     machine = Machine(name=args.machine)
