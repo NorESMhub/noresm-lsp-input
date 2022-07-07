@@ -7,7 +7,7 @@ executing tools from the CTSM and CIME libraries.
 
 To run this script on SAGA run the following commands:
 
-# WARNING! Move existing copies of .cime and ctsm from your home directory (~) to be
+# WARNING! Move existing copies of .cime and ctsm from your installation  directory to be
 # on the safe side.
 
 # First time installation
@@ -16,7 +16,7 @@ chmod +x ./install_dependencies.sh
 ./install_dependencies.sh
 
 # Load dependencies, necessary each time you log in again
-cd ~/nlp-input-handling
+cd [INSTALLATION_DIR]/nlp-input-handling
 . ./load_dependencies.sh
 
 There are two ways to execute this script:

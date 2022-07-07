@@ -8,8 +8,11 @@ CTSM_RELEASE_TAG=ctsm5.1.dev043
 DOT_CIME_REMOTE=https://github.com/MetOs-UiO/dotcime.git
 DOT_CIME_SHA=30a2b73996a951277c874d9f28ea82a00427ffb2
 
+# Root working dir for outputs, change this if needed!
+ROOT_DIR=$USERWORK
+
 # Set paths
-DIR_CTSM=$HOME/ctsm
+DIR_CTSM=$ROOT_DIR/ctsm
 DIR_CODE=$(dirname $(readlink -f "$0"))/..
 DIR_ENV=$DIR_CODE/env
 
@@ -26,12 +29,12 @@ if ! [ -d $DIR_CTSM ]; then
     module purge
     echo "Done setting up CTSM!"
 else
-    echo "WARNING! A clone of CTSM already exists in $HOME/ctsm."
+    echo "WARNING! A clone of CTSM already exists in $ROOT_DIR/ctsm."
     echo "If you run into errors, try to (re-)move it and re-run the"
     echo "installation."
 fi;
 
-# CIME porting (if needed)
+# CIME porting (if needed), MUST BE IN HOMEDIR
 if ! [ -d $HOME/.cime ]; then
     module load git/2.23.0-GCCcore-8.3.0
     git clone $DOT_CIME_REMOTE $HOME/.cime
