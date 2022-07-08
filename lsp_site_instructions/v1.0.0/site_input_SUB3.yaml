@@ -6,7 +6,7 @@ coordinates: # Geographic coordinates, decimal (WGS84)
   lon: 6.63028
 elevation: 769 # m above sea level [m.a.s.l.]
 # The scripts requires a custom CTSM version (run install_dependencies.sh first)
-ctsm_path: ~/ctsm/
+ctsm_path: /cluster/work/users/lassetk/ctsm/
 # The final tar-ball will end up here:
 output:
   local_output: /cluster/shared/noresm/inputdata_fates_platform/v1.0.0/raw/
