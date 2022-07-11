@@ -684,7 +684,7 @@ class SinglePointExtractor:
         nc_in_str = \
             self.instruction_dict['nc_input_paths']['land']['urban']
 
-        out_path = self.output_dir/'lnd'/'clm2'/'urbandata'
+        out_path = self.output_dir / 'lnd' / 'clm2' / 'urbandata' / str(self.site_code)
         if not out_path.is_dir():
             self.make_dir(out_path)
         out_str = str(out_path)
@@ -758,7 +758,7 @@ class SinglePointExtractor:
         nc_in_str = \
             self.instruction_dict['nc_input_paths']['land']['fire']
 
-        out_path = self.output_dir / 'lnd' / 'clm2' / 'firedata'
+        out_path = self.output_dir / 'lnd' / 'clm2' / 'firedata' / str(self.site_code)
         if not out_path.is_dir():
             self.make_dir(out_path)
         out_str = str(out_path)
@@ -898,7 +898,7 @@ class SinglePointExtractor:
         nc_in_str = \
             self.instruction_dict['nc_input_paths']['atmosphere']['lightning']
 
-        out_path = self.output_dir/'atm'/'datm7'/'NASA_LIS'
+        out_path = self.output_dir / 'atm' / 'datm7' / 'NASA_LIS' / str(self.site_code)
         if not out_path.is_dir():
             self.make_dir(out_path)
         out_str = str(out_path)
