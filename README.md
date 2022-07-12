@@ -5,8 +5,8 @@
 Log into SAGA and Run the following commands:
 ```
 cd
-git clone https://github.com/lasseke/nlp-input-handling.git
-cd nlp-input-handling/install
+git clone https://github.com/lasseke/noresm-lsp-input.git
+cd noresm-lsp-input/install
 chmod +x ./install_dependencies.sh
 ./install_dependencies.sh
 ```
@@ -17,7 +17,7 @@ To print additional help, run `python3 create_forcing_classic.py --help`.
 :warning: **You need to load the Python dependencies before you can create a new site!**
 Run (note the dots!):
 ```
-cd [INSTALLATION_DIR]/nlp-input-handling
+cd [INSTALLATION_DIR]/noresm-lsp-input
 . ./load_dependencies.sh
 ```
 
@@ -52,6 +52,6 @@ Check out the `make_input_jobscripts/` directory for template bash scripts that
 will send the input data creation as jobs to the SAGA queue. Refer to [the SIGMA2 docs](https://documentation.sigma2.no/jobs/job_scripts.html) for additional information. Once you adapted a script
 according to your needs and credentials, run the following command:
 ```
-cd [INSTALLATION_DIR]/nlp-input-handling/make_input_jobscripts
+cd [INSTALLATION_DIR]/noresm-lsp-input/make_input_jobscripts
 sbatch [my_script_name].sh
 ```

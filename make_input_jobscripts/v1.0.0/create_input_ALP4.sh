@@ -11,7 +11,7 @@
 set -o errexit  # Exit the script on any error
 
 module --quiet purge  # Reset the modules to the system default
-cd $USERWORK/nlp-input-handling
+cd $USERWORK/noresm-lsp-input
 . ./load_dependencies.sh # Load dependencies for input data creation scripts
 
 python3 create_forcing_classic.py -f ./lsp_site_instructions/v1.0.0/site_input_ALP4.yaml

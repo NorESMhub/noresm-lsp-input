@@ -11,12 +11,12 @@ To run this script on SAGA run the following commands:
 # on the safe side.
 
 # First time installation
-cd nlp-input-handling/install
+cd noresm-lsp-input/install
 chmod +x ./install_dependencies.sh
 ./install_dependencies.sh
 
 # Load dependencies, necessary each time you log in again
-cd [INSTALLATION_DIR]/nlp-input-handling
+cd [INSTALLATION_DIR]/noresm-lsp-input
 . ./load_dependencies.sh
 
 There are two ways to execute this script:
