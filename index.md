@@ -47,6 +47,7 @@ git checkout -b [new-branch-name]
 → Copy an existing GEOJSON entry (everything between the curly brackets that starts before “type”: ”Feature”) and adapt the coordinates, download url, fsurfdat, group, … values. IT MUST MATCH THE ASSOCIATED “.yaml” INFORMATION AND STORAGE URL FOR YOUR NEW SITE!
 
 3. In `resources/overwrites/ccs_config/component_grids_nuopc.xml`, add (see examples around line 655):
+
 ```
 <domain name="1x1_[your-site-id]">
 <lat>[your-site-lat-coordinate]</lat> 
@@ -56,6 +57,7 @@ git checkout -b [new-branch-name]
 ```
 
 4. In `resources/overwrites/ccs_config/modelgrid_aliases_nuopc.xml`, add (see examples around line 137):
+
 ```
 <model_grid alias="1x1_[your-site-id]" compset="DATM.+CLM|DATM.+SLND">
 <grid name="atm">1x1_[your-site-id]</grid>
@@ -65,6 +67,7 @@ git checkout -b [new-branch-name]
 ```
 
 5. In `resources/overwrites/components/cdeps/datm/cime_config/namelist_definition_datm.xml`, add (see examples around line 82):
+
 ```
 <value datm_mode="CLM1PT" model_grid="1x1_[your-site-id]">
 CLM1PT.$ATM_GRID.Solar,CLM1PT.$ATM_GRID.Precip,CLM1PT.$ATM_GRID.TPQW
@@ -174,6 +177,7 @@ CLM1PT.$ATM_GRID.Solar,CLM1PT.$ATM_GRID.Precip,CLM1PT.$ATM_GRID.TPQW
 	<stream_readmode>single</stream_readmode>
 </stream_entry>
 ```
+
 7. In `resources/overwrites/components/clm/bld/namelist_files/namelist_defaults_ctsm.xml`, add (see examples around lines 903, 1371, 1385, 1457):
 
 ```
