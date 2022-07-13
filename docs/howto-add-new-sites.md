@@ -31,13 +31,15 @@ With the recommended specifications, you can expect a single job to run for ~3-6
 
 ## 2 Upload the new input data tarball to NIRD
 Use a file transfer option of your choice (WinSCP, etc.) to move the newly created “.tar” archive to the NIRD storage. Make sure to place it in the correct subfolder (version, etc.). For instance:
-`scp inputdata_version1.0.0_[your-site-id].tar [your-user-name]@login.nird.sigma2.no:/projects/NS2806K/EMERALD/EMERALD_platform/inputdata_noresm_landsites/v1.0.0/default/`
+```
+scp inputdata_version1.0.0_[your-site-id].tar [your-user-name]@login.nird.sigma2.no:/projects/NS2806K/EMERALD/EMERALD_platform/inputdata_noresm_landsites/v1.0.0/default/`
+```
 
 ## 3 Add the new site to the ctsm/noresm-lsp config files (for v1.0.0)
 Currently (v1.0.0), you need to carefully hardcode new sites into different files within the noresm-lsp structure. See https://github.com/NorESMhub/NorESM_LandSites_Platform/pull/116 for an example, but details are also described below:
 1. Clone (or fork) the noresm-land-sites-platform repository and create a new branch:
 ```
-git clone https://github.com/NorESMhub/NorESM_LandSites_Platform.git
+git clone https://github.com/NorESMhub/noresm-land-sites-platform.git
 git checkout -b [new-branch-name]
 ```
 2. In `resources/config/sites.json`:
