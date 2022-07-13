@@ -6,10 +6,10 @@ forcing data from global or regional datasets. Broadly, it is a wrapper for
 executing tools from the CTSM and CIME libraries:
 
 https://github.com/ESCOMP/CTSM
+
 https://github.com/ESMCI/cime
 
-Particularly, parts of the code are heavily inspired by CTSM's subset_data.py tool:
-https://github.com/ESCOMP/CTSM/blob/master/tools/site_and_regional/subset_data.py
+Particularly, parts of the code are heavily inspired by CTSM's [subset_data.py](https://github.com/ESCOMP/CTSM/blob/master/tools/site_and_regional/subset_data.py) tool
 and other resources provided by NCAR and the CESM hive mind.
 
 ## 1 Instructions
