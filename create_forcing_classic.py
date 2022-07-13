@@ -1,9 +1,18 @@
 #! /usr/bin/env python3
 """
-This module harmonizes the different steps necessary to create a CLM input data
+Authors: Lasse Keetz, Hui Tang
+Date: 2022-07-11
+
+This module harmonizes the different steps necessary to create a CTSM input data
 tarball used within the NorESM land sites platform setup. It extracts single-point 
-forcing data from global and regional datasets. Broadly, it is a wrapper for 
-executing tools from the CTSM and CIME libraries.
+forcing data from global or regional datasets. Broadly, it is a wrapper for 
+executing tools from the CTSM and CIME libraries:
+https://github.com/ESCOMP/CTSM
+https://github.com/ESMCI/cime
+
+Particularly, parts of the code are heavily inspired by CTSM's subset_data.py tool:
+https://github.com/ESCOMP/CTSM/blob/master/tools/site_and_regional/subset_data.py
+and other resources provided by NCAR and the CESM hive mind.
 
 To run this script on SAGA run the following commands:
 
@@ -25,13 +34,6 @@ There are two ways to execute this script:
 
 ./create_forcing_classic.py -d path/to/yaml/collection
 => For using a number of yaml recipies contained in a common directory
-
-Parts of the code are heavily inspired by NCARs subset_data.py tool:
-https://github.com/ESCOMP/CTSM/blob/master/tools/site_and_regional/subset_data.py
-and other resources provided by NCAR and the CESM hive mind.
-
-Authors: Lasse Keetz, Hui Tang
-Date: 2022-07-11
 """
 
 # Library imports

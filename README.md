@@ -1,4 +1,16 @@
 # Create new single-point input forcing data for the NorESM land sites platform
+
+This repository harmonizes the different steps necessary to create a CTSM input data
+tarball used within the NorESM land sites platform setup. It extracts single-point 
+forcing data from global or regional datasets. Broadly, it is a wrapper for 
+executing tools from the CTSM and CIME libraries:
+https://github.com/ESCOMP/CTSM
+https://github.com/ESMCI/cime
+
+Particularly, parts of the code are heavily inspired by CTSM's subset_data.py tool:
+https://github.com/ESCOMP/CTSM/blob/master/tools/site_and_regional/subset_data.py
+and other resources provided by NCAR and the CESM hive mind.
+
 ## 1 Instructions
 
 ### 1.1 First time installation on SAGA
@@ -44,13 +56,13 @@ Add as many instruction files using the `site_input_instructions.yaml` template
 as you like into `mysites/` (following step 1.2.1).
 Subsequently, run:
 ```
-python3 create_forcing_classic.py -d ./mysites/ -m saga
+python3 create_forcing_classic.py -d ./mysites/
 ```
 
 ## 3 Sending jobs to the SAGA queue
-Check out the `make_input_jobscripts/` directory for template bash scripts that
-will send the input data creation as jobs to the SAGA queue. Refer to [the SIGMA2 docs](https://documentation.sigma2.no/jobs/job_scripts.html) for additional information. Once you adapted a script
-according to your needs and credentials, run the following command:
+Check out the `make_input_jobscripts/` directory for template scripts that will send the
+input data creation as jobs to the SAGA queue. Refer to [the SIGMA2 docs](https://documentation.sigma2.no/jobs/job_scripts.html) for additional information. 
+Once you adapted a script according to your needs and credentials, run the following command:
 ```
 cd [INSTALLATION_DIR]/noresm-lsp-input/make_input_jobscripts
 sbatch [my_script_name].sh
