@@ -14,7 +14,7 @@ cd $USERWORK
 ```
 3. Clone the input data creation repository:
 ```
-git clone https://github.com/lasseke/noresm-lsp-input
+git clone https://github.com/NorESMhub/noresm-lsp-input.git
 ```
 
 4. Follow the installation steps in `[local_path]/noresm-lsp-input/README.md`.
