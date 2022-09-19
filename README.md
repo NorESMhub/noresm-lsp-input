@@ -1,4 +1,4 @@
-# Create new single-point input forcing data for the NorESM land sites platform
+# Create new single-point input forcing data for the [NorESM land sites platform](https://noresmhub.github.io/noresm-land-sites-platform/)
 
 This repository harmonizes the different steps necessary to create a CTSM input data
 tarball used within the NorESM land sites platform setup. It extracts single-point 
@@ -11,6 +11,8 @@ https://github.com/ESMCI/cime
 
 Particularly, parts of the code are heavily inspired by CTSM's [subset_data.py](https://github.com/ESCOMP/CTSM/blob/master/tools/site_and_regional/subset_data.py) tool
 and other resources provided by NCAR and the CESM hive mind.
+
+See alo the complete instructions for adding a new site under [docs/howto-add-new-sites.md](https://github.com/NorESMhub/noresm-lsp-input/blob/main/docs/howto-add-new-sites.md)
 
 ## 1 Instructions
 
