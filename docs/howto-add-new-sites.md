@@ -1,4 +1,13 @@
-# Adding a new site to the platform (for developer docs)
+# Adding a new site to the NorESM Land Sites Platform
+
+In order to add a new site to the NorESM-LSP, you will need to follow the following steps described in this document and in the [readme](https://github.com/NorESMhub/noresm-lsp-input/blob/main/README.md) file:
+
+1. Create new input data by subsetting large, global files. This is best done on cluster HPCs.
+2. Upload the new input data to accessible online storage. Might require read/write access to NIRD
+3. Add the site to the code. Requires meticulous copying of existing code.
+4. Test your changes and push/make a pull request to GitHub
+
+
 ## 1 Create single-point input data from global files
 This step is currently only implemented and tested for execution on the Norwegian cluster HPCs  SAGA/FRAM. Porting the code somewhere else is possible, but requires some level of technical expertise and adaptations.
 
@@ -197,11 +206,12 @@ lnd/clm2/surfdata_map/-[your-site-id]/surfdata_[your-site-id]_simyr2000.nc</fsur
 <stream_fldfilename_urbantv phys="clm5_0" hgrid="1x1_[your-site-id]">lnd/clm2/urbandata/[your-site-id]/CLM50_tbuildmax_Oleson_2016_0.9x1.25_simyr1849-2106_c160923_[your-site-id].nc</stream_fldfilename_urbantv>
 ```
 
-8. To test the changes locally:
+## 4 Test the changes locally
+
 - Stop potentially running noresm-lsp containers
 - Delete the `resources/ctsm` dir
 - Run `docker-compose up` to start the container as usual → this will reclone CTSM and apply the changes you made in the `overwrites` dir
 
-9. Once you made sure everything works, you can push your changes and/or create a pull request (PR) on GitHub.
+Once you made sure everything works, you can push your changes to your fork on GitHub, or preferably create a pull request (PR) to the main repository so everyone can use the new site. 
 
 _The end._
