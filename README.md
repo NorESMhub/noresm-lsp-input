@@ -9,10 +9,12 @@ https://github.com/ESCOMP/CTSM
 
 https://github.com/ESMCI/cime
 
-Particularly, parts of the code are heavily inspired by CTSM's [subset_data.py](https://github.com/ESCOMP/CTSM/blob/master/tools/site_and_regional/subset_data.py) tool
-and other resources provided by NCAR and the CESM hive mind.
+Parts of the code are heavily inspired by CTSM's [subset_data.py](https://github.com/ESCOMP/CTSM/blob/master/tools/site_and_regional/subset_data.py) tool
+and other resources provided by NCAR and the CESM hive mind. 
 
-See alo the complete instructions for adding a new site under [docs/howto-add-new-sites.md](https://github.com/NorESMhub/noresm-lsp-input/blob/main/docs/howto-add-new-sites.md)
+The scripts contained in [./external_scripts](https://github.com/NorESMhub/noresm-lsp-input/tree/main/external_scripts) are modified versions of work created by [@huitang-earth](https://github.com/huitang-earth/), accessible under https://github.com/huitang-earth/NLP_prep.
+
+Refer to the complete instructions for adding a new site under [docs/howto-add-new-sites.md](https://github.com/NorESMhub/noresm-lsp-input/blob/main/docs/howto-add-new-sites.md).
 
 ## 1 Instructions
 
