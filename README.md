@@ -1,9 +1,9 @@
 # Create new single-point input forcing data for the [NorESM land sites platform](https://noresmhub.github.io/noresm-land-sites-platform/)
 
 This repository harmonizes the different steps necessary to create a CTSM input data
-tarball used within the NorESM land sites platform setup under the `legacy` branch. It extracts single-point 
-forcing data from global or regional datasets. Broadly, it is a wrapper for 
-executing tools from the CTSM and CIME libraries:
+tarball used within the `Legacy` version v0.2.0 of the NorESM land sites platform. 
+It extracts single-point forcing data from global or regional datasets. Broadly, it 
+is a wrapper for executing tools from the CTSM and CIME libraries:
 
 https://github.com/ESCOMP/CTSM
 
